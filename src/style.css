@@ -1,0 +1,461 @@
+/* ==========================================================================
+   1. 全般・基本スタイル（画面表示用）
+   ========================================================================== */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* 左右スプリットレイアウト */
+.app-layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* 🌟新設：左側の包含枠（命盤と鑑定書を縦に並べてスクロールさせる） */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 命盤エリア */
+#chart-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#chart-container h1 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+/* 鑑定内容の表示エリア調整 */
+#reading-container {
+  margin-top: 25px;
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
+}
+
+#reading-container h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  border-left: 4px solid #0288d1;
+  padding-left: 8px;
+}
+
+/* 画面表示での textarea の見栄え */
+#reading-text {
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.6;
+  border: 1px solid #ddd;
+  padding: 15px;
+  box-sizing: border-box;
+  resize: none; 
+  overflow: hidden; /* スクロールバーを完全に隠す（JSで伸縮するため） */
+  background-color: #fafafa;
+  font-family: inherit;
+}
+
+/* 普段（画面表示時）は印刷用テキスト枠を絶対に隠しておく */
+.print-only-text {
+  display: none;
+}
+
+/* ==========================================================================
+   2. 右側：サイドバー入力フォーム
+   ========================================================================== */
+#sidebar {
+  width: 320px;
+  background-color: #fff;
+  border-left: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.05);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+#sidebar h2 {
+  font-size: 18px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #0288d1;
+  padding-bottom: 5px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* ボタン類の統一スタイル */
+#sidebar button {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-sizing: border-box;
+}
+
+#btn-submit {
+  background-color: #0288d1;
+}
+
+#btn-submit:hover {
+  background-color: #01579b;
+}
+
+#btn-print:hover {
+  filter: brightness(0.9);
+}
+
+/* ==========================================================================
+   3. 命盤（4x4 グリッド・各宮）のレイアウト
+   ========================================================================== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, minmax(180px, auto));
+  gap: 8px;
+}
+
+.palace {
+  border: 1px solid #aaa;
+  background-color: #fff;
+  padding: 8px;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* 地支固定位置 */
+.loc-巳 { grid-row: 1; grid-column: 1; }
+.loc-午 { grid-row: 1; grid-column: 2; } 
+.loc-未 { grid-row: 1; grid-column: 3; } 
+.loc-申 { grid-row: 1; grid-column: 4; } 
+.loc-辰 { grid-row: 2; grid-column: 1; }
+.loc-酉 { grid-row: 2; grid-column: 4; } 
+.loc-卯 { grid-row: 3; grid-column: 1; }
+.loc-戌 { grid-row: 3; grid-column: 4; } 
+.loc-寅 { grid-row: 4; grid-column: 1; }
+.loc-丑 { grid-row: 4; grid-column: 2; } 
+.loc-子 { grid-row: 4; grid-column: 3; } 
+.loc-亥 { grid-row: 4; grid-column: 4; } 
+
+.center-palace {
+  grid-row: 2 / span 2;
+  grid-column: 2 / span 2;
+  border: 2px solid #333;
+  background-color: #fffdf9;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+.center-name { font-size: 18px; font-weight: bold; text-align: center; color: #111; margin-bottom: 8px; }
+.center-divider { height: 2px; background-color: #333; margin-bottom: 15px; }
+.center-info-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; border-bottom: 1px dashed #ddd; padding-bottom: 4px; }
+.center-label { color: #666; font-weight: bold; }
+.center-value { color: #222; font-weight: 500; text-align: right; }
+.pattern-highlight { color: #b71c1c; font-weight: bold; }
+.title-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-bottom: 5px; }
+.title { font-weight: bold; font-size: 15px; }
+.body-palace-tag { font-size: 10px; background-color: #e1f5fe; color: #0288d1; padding: 1px 3px; border-radius: 3px; font-weight: bold; }
+.stem-branch { font-size: 11px; color: #777; text-align: right; }
+.star-container { flex-grow: 1; font-size: 12px; }
+.major-star { color: #d32f2f; font-weight: bold; margin-bottom: 2px; }
+.minor-star { color: #1976d2; margin-bottom: 2px; }
+.adj-star { color: #666; font-size: 11px; }
+.brightness { font-size: 10px; margin-left: 2px; }
+.b-good { color: #e65100; font-weight: bold; }
+.b-bad { color: #311b92; background-color: #eee; padding: 0 1px; }
+.b-normal { color: #555; }
+.fortune-container { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 5px; border-top: 1px dashed #eee; font-size: 11px; }
+.decadal-pane { color: #e65100; font-weight: bold; }
+.yearly-pane { color: #7b1fa2; font-size: 10px; text-align: right; max-width: 70%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ==========================================================================
+   4. 宮ごとの動的背景色（画面・印刷共通）
+   ========================================================================== */
+.palace.bg-ming { background-color: #fff0f2 !important; }
+.palace.bg-qian { background-color: #f0fdf4 !important; }
+.palace.bg-sanhe { background-color: #fefce8 !important; }
+
+/* ==========================================================================
+   5. 🖨 印刷用スタイル制御（絶対はみ出さない完全リセット版）
+   ========================================================================== */
+/* ==========================================================================
+   5. 🖨 印刷用スタイル制御（王道レイアウト解きほぐし版）
+   ========================================================================== */
+@media print {
+  /* 背景色や罫線を強制適用 */
+  /* 🌟【最優先追記】ブラウザ独自の自動拡大・縮工バグを強制的に100%に固定する */
+  html {
+    zoom: 100% !important;
+    font-size: 14px !important;
+  }
+
+  /* 背景色や罫線を強制適用 */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 🌟 親要素の横並び(flex)と画面固定(100vh)を上から順番に解除 */
+  html, body {
+    display: block !important;
+    width: 210mm !important;      /* 💡A4の横幅をミリで絶対固定 */
+    max-width: 210mm !important;
+    min-width: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #fff !important;
+  }
+
+  /* 画面でスプリット（横並び）させていた大枠を解除 */
+  .app-layout {
+    display: block !important;        /* flex をやめて通常の縦並びブロックに */
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 左側メインエリアの幅制限を100%に解放 */
+  .main-content.print-unlocked {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;          /* 画面用の最小幅ロックを解除 */
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* 🌟 2. 1ページ目：命盤コンテナ（ここで高さをミリメートルで優しく確保） */
+  #chart-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    /* A4縦(297mm)に対して、上下余白を引いて確実に1枚に収まる縦幅 */
+    height: 240mm !important;        
+    padding: 10mm 15mm 0 15mm !important; /* 左右に15mmの安全余白を持たせてはみ出し防止 */
+    margin: 0 auto !important;
+    overflow: visible !important;
+    
+    /* 🌟超重要：ここで100%確実にページを区切る（次を2ページ目に送る） */
+    page-break-after: always !important; 
+    break-after: page !important;
+  }
+
+  #chart-container h1 {
+    text-align: center !important;
+    margin-top: 0 !important;
+    margin-bottom: 8mm !important;
+    font-size: 24px !important;
+    height: 10mm !important;
+  }
+
+  /* 🌟 3. 命盤グリッド：左右の余白の内側に等倍で引き伸ばす */
+  .grid {
+    display: grid !important;
+    width: 120% !important;          /* 👈 現在のダイナミックな横幅を維持 */
+    
+    /* 💡【変更】中央寄せ(margin: 0 auto)を廃止し、左へ15mm強制平行移動 */
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    margin-right: 0 !important;
+    margin-left: -15mm !important;   /* 👈 マイナス指定で全体の形を崩さず左へ1.5cm引っ張ります */
+    
+    /* 💡 縦の総高さを 190mm から 「220mm」に伸ばして下の空白を埋める */
+    height: 270mm !important;        
+    
+    grid-template-columns: repeat(4, 1fr) !important;
+    /* 💡 1マスの高さを 45mm から 「53mm」に大きくします（53mm × 4マス ＝ 212mm） */
+    grid-template-rows: repeat(4, 60mm) !important; 
+    gap: 3mm !important;              /* マス目の隙間も少し広げて見やすく */
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    /*border: 1.5px solid #000000 !important; */
+    background-color: #ffffff !important;
+  }
+
+  /* 🌟 2. 各宮（マス目）：引き伸ばした高さにぴったり合わせる */
+  .palace, .center-palace {
+    display: flex !important;
+    height: 60mm !important;        /* 👈 マス目と同じ 60mm に広げる */
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;     /* はみ出し防止ロックは掛けたままにする */
+
+    /* 💡 枠線強化：各マスの境界線も真っ黒（#000）、太さ1.5pxの直線にする */
+    border: 1.5px solid #000000 !important; 
+    background-color: #ffffff !important;
+    
+    /* 印刷時の線のダブりによるムラを防ぐ設定 */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 💡【追加】大限・小限を最下部へ絶対配置するための基準線と、文字被り防止の余白を設定 */
+  .palace {
+    position: relative !important;
+    padding-bottom: 9mm !important;  /* 星の文字がどんなに多くても、下の2行に被らないように防波堤を作る */
+  }
+  
+  /* 中央（中宮）の高さも連動して大きく（60mm × 2 + gap） */
+  .center-palace {
+    height: 123mm !important;
+  }
+
+  /* 🌟 3. 文字サイズ：小さくしすぎた文字を、読みやすい大きさに少しだけ戻す */
+  .palace *, .center-palace * {
+    font-size: calc(100% - 1px) !important; /* 👈 ほんの少しだけ文字を大きく */
+    word-break: break-all !important;
+  }
+
+  .palace-header, .palace-content {
+    border-color: #000000 !important;
+  }
+
+  /* 文字のバランスを最適化 */
+  .title { font-size: 14px !important; }
+  .major-star { font-size: 12px !important; font-weight: bold !important; }
+  .minor-star { font-size: 11px !important; }
+  .adj-star { font-size: 10px !important; }
+  .center-name { font-size: 18px !important; }
+  .center-info-item { font-size: 12px !important; }
+
+  /* 🌟【追加】大限（1行目）と小限（2行目）を縦並びにして最下部に張り付ける制御 */
+  .fortune-container {
+    display: flex !important;
+    flex-direction: column !important; /* 上が大限、下が小限の「2行縦並び」にする */
+    justify-content: flex-end !important;
+    align-items: flex-start !important; /* 文字を左寄せにする */
+    width: 100% !important;
+    
+    /* マス目の最下部への絶対固定 */
+    position: absolute !important;
+    bottom: 1.5mm !important;
+    left: 0 !important;
+    padding-left: 3mm !important;      /* 左右の文字開始位置の微調整 */
+    padding-right: 3mm !important;
+    box-sizing: border-box !important;
+  }
+
+/* 🌟【修正】1文字も省略せず、すべての年齢を最後まで強制表示する */
+  .decadal-pane, .yearly-pane {
+    font-size: 7.5px !important;       /* 👈【変更】文字サイズをもう一回り小さくして、収まりやすくする */
+    white-space: nowrap !important;     
+    overflow: visible !important;       /* 👈【変更】hiddenから変更：枠を少しはみ出してでも絶対に全文字見せる */
+    text-overflow: clip !important;     /* 👈【変更】ellipsis（…）を完全に廃止し、文字を丸めない */
+    letter-spacing: -0.2px !important;  /* 👈【追加】文字の間隔をほんの少し詰め、横幅の限界値を広げる */
+    line-height: 1.3 !important;        
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* 大限と小限の間にほんのわずかな隙間を作る */
+  .yearly-pane {
+    margin-top: 0.5mm !important;
+  }
+
+  /* 🌟 4. 2ページ目以降：消えていた鑑定書エリアを通常ブロックとして完全復活 */
+  #reading-container.page-break {
+    /* 命盤の直後から始まるよう、手前での改ページを徹底 */
+    page-break-before: always !important;
+    break-before: page !important;
+    
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;         /* 文字量に応じて自然にページが増えるようにする */
+    overflow: visible !important;
+    
+    /* 画面用の枠線を消してスッキリした書類に */
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 15mm 15mm !important;   /* 2ページ目以降の読みやすい余白 */
+    margin-top: 0 !important;
+  }
+
+  #reading-container h3 {
+    font-size: 18px !important;
+    border-left: 4px solid #0288d1 !important;
+    padding-left: 8px !important;
+    margin-bottom: 5mm !important;
+  }
+
+  /* 画面用の入力用テキストエリアは非表示 */
+  #reading-text {
+    display: none !important;
+  }
+
+  /* 🌟 5. 印刷用のテキスト表示枠（div）を14pxの適正サイズで露出 */
+  .print-only-text#print-reading-text {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    font-size: 14px !important;      /* 文字の大きさをスマートに */
+    line-height: 1.6 !important;
+    color: #000 !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    padding: 0 !important;
+  }
+
+  /* 🌟 6. 右側のサイドバー入力欄は印刷から完全に排除 */
+  .no-print, #sidebar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+}
