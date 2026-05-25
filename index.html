@@ -10,12 +10,13 @@
        ----------------------------------------- */
     .app-layout {
       display: flex;
-      flex-direction: row;
+      flex-direction: row-reverse; /* 👈 HTML上の順序が【入力➔命盤】になったので、PCでは左右反転させて右側にパネルを配置 */
       width: 100%;
       min-height: 100vh;
       box-sizing: border-box;
     }
 
+    /* メインコンテンツ（命盤・鑑定書） */
     .main-content {
       flex: 1;
       padding: 20px;
@@ -23,13 +24,14 @@
       min-width: 0;
     }
 
+    /* データ入力サイドバー */
     #sidebar {
       width: 320px;
       min-width: 320px;
       background-color: #f5f5f5;
       padding: 20px;
       box-sizing: border-box;
-      border-left: 1px solid #ddd;
+      border-right: 1px solid #ddd; /* PCでは左側に来るため右線に変更 */
     }
 
     .form-group {
@@ -63,14 +65,14 @@
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
-        flex-direction: column;
+        display: flex;
+        flex-direction: column; /* スマホでは標準の上から下への流れにする */
       }
 
       #sidebar {
         width: 100%;
         min-width: 100%;
-        order: 1; /* 入力パネルを上 */
-        border-left: none;
+        border-right: none;
         border-bottom: 1px solid #ddd;
         padding: 20px 10px;
         box-sizing: border-box;
@@ -78,7 +80,6 @@
 
       .main-content {
         width: 100%;
-        order: 2; /* 命盤を下 */
         padding: 10px;
       }
 
@@ -142,21 +143,6 @@
 
 <div class="app-layout">
   
-  <div class="main-content">
-    <div class="main-content print-unlocked">
-      <div id="chart-container">
-        <h1>紫微斗数 命盤</h1>
-        <div id="chart" class="grid"></div>
-      </div>
-      
-      <div id="reading-container" class="page-break">
-        <h3>鑑定書・特記事項</h3>
-        <textarea id="reading-text" rows="15"></textarea>
-        <div id="print-reading-text" class="print-only-text"></div>
-      </div>
-    </div>
-  </div>
-
   <div id="sidebar" class="no-print">
     <h2>命盤データ入力</h2>
     
@@ -204,8 +190,23 @@
       </select>
     </div>
 
-    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="setTimeout(() => document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' }), 100)">命盤を作成する</button>
+    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="setTimeout(() => document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' }), 150)">命盤を作成する</button>
     <button id="btn-print" style="width: 100%; background-color: #4CAF50; color: white;">命盤と鑑定内容を印刷</button>
+  </div>
+
+  <div class="main-content">
+    <div class="main-content print-unlocked">
+      <div id="chart-container">
+        <h1>紫微斗数 命盤</h1>
+        <div id="chart" class="grid"></div>
+      </div>
+      
+      <div id="reading-container" class="page-break">
+        <h3>鑑定書・特記事項</h3>
+        <textarea id="reading-text" rows="15"></textarea>
+        <div id="print-reading-text" class="print-only-text"></div>
+      </div>
+    </div>
   </div>
 
 </div>
