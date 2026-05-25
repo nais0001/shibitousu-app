@@ -6,16 +6,17 @@
   <title>紫微斗数 命盤作成アプリ</title>
   <style>
     /* -----------------------------------------
-       💻 パソコン向けの基本レイアウト（横並び）
+       💻 パソコン向けの基本レイアウト（横並び・元通り）
        ----------------------------------------- */
     .app-layout {
       display: flex;
-      flex-direction: row-reverse;
+      flex-direction: row; /* 元の「左：命盤、右：入力」に完全固定 */
       width: 100%;
       min-height: 100vh;
       box-sizing: border-box;
     }
 
+    /* 左側：メインコンテンツ */
     .main-content {
       flex: 1;
       padding: 20px;
@@ -23,13 +24,19 @@
       min-width: 0;
     }
 
+    /* 右側：データ入力サイドバー */
     #sidebar {
       width: 320px;
       min-width: 320px;
       background-color: #f5f5f5;
       padding: 20px;
       box-sizing: border-box;
-      border-right: 1px solid #ddd;
+      border-left: 1px solid #ddd;
+    }
+
+    /* スマホ専用の「条件入力ボタン」はPCでは完全に隠す */
+    .mobile-menu-toggle {
+      display: none;
     }
 
     .form-group {
@@ -59,61 +66,77 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（CSS3ズーム縮小方式）
+       📱 スマホ向けの画面表示レイアウト（開閉ポップアップ式）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
-        display: flex;
-        flex-direction: column; /* 確実に縦並びにする */
-      }
-
-      #sidebar {
+        display: block;
         width: 100%;
-        min-width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-        padding: 20px 10px;
-        box-sizing: border-box;
       }
 
       .main-content {
         width: 100%;
         padding: 10px;
+        padding-top: 60px; /* 👈 上部固定ボタンのぶん余白を空ける */
         box-sizing: border-box;
       }
 
-      /* 💡 JSの描画バグを防ぐため、コンテナの制限を完全に撤廃 */
+      /* スマホ時に最上部に固定表示される「条件入力ボタン」 */
+      .mobile-menu-toggle {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        line-height: 50px;
+        font-weight: bold;
+        z-index: 9999; /* 最前面に固定 */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        cursor: pointer;
+      }
+
+      /* 💡 入力パネルを「普段は画面外に隠れ、ボタンを押すと下からスッと出てくる」方式に */
+      #sidebar {
+        position: fixed !important;
+        bottom: -100%; /* 普段は画面の下に完全に隠す */
+        left: 0 !important;
+        width: 100% !important;
+        max-height: 80vh !important; /* 画面の8割までの高さに制限 */
+        overflow-y: auto !important; /* パネル内をスクロール可能に */
+        z-index: 9998;
+        background-color: #ffffff !important;
+        border-left: none;
+        border-top: 3px solid #4CAF50;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+        transition: bottom 0.3s ease-in-out; /* 動くアニメーション */
+        padding: 20px;
+      }
+
+      /* 💡 ボタンが押されてクラスがついた時だけ、画面内に出現させる */
+      #sidebar.active {
+        bottom: 0 !important;
+      }
+
+      /* 命盤コンテナの縮小調整 */
       #chart-container {
         width: 100%;
-        overflow: visible;
+        overflow-x: auto;
         margin-bottom: 20px;
       }
       
-      /* 💡 【解決策】JSが想定する「元のサイズ」で一度100%正しく描画させ、
-         その後にCSSの `zoom`（または `transform`）を使って、スマホの画面幅に合わせて箱ごと縮小します。
-         これによりプログラムの計算が狂わず、確実に命盤が出現します。 */
+      /* JSの等倍描画を崩さず、はみ出さないようにスクロールまたは縮小 */
       #chart {
-        display: grid !important; /* JSの元設定を維持 */
-        width: 600px !important;  /* JSが計算しやすい元のサイズを保証 */
-        zoom: 0.6;                /* 👈 画面幅に合わせて一括で60%に縮小表示（文字も線も全て連動） */
-        transform-origin: top left;
-        margin: 0 auto !important;
-        box-sizing: border-box;
-      }
-
-      /* お使いのブラウザがzoom未対応だった場合のフォールバック（Safari対策） */
-      @supports not (zoom: 0.6) {
-        #chart {
-          transform: scale(0.6) !important;
-          margin-bottom: -240px !important; /* スケール縮小で生じる下の余白を相殺 */
-        }
+        min-width: 600px; /* JS本来のサイズを維持してエラーを防止 */
       }
 
       #reading-container {
         width: 100%;
         box-sizing: border-box;
         margin-top: 20px;
-        padding: 0 5px;
       }
 
       #reading-text {
@@ -123,7 +146,7 @@
     }
 
     /* -----------------------------------------
-       🖨 印刷専用の完璧なレイアウト
+       🖨 印刷専用のレイアウト
        ----------------------------------------- */
     @media print {
       html, body, .app-layout, .main-content {
@@ -136,7 +159,7 @@
         padding: 0 !important;
       }
 
-      .no-print, button, #sidebar {
+      .no-print, button, #sidebar, .mobile-menu-toggle {
         display: none !important;
       }
 
@@ -144,16 +167,14 @@
         display: block !important;
         width: 100% !important;
         page-break-inside: avoid !important;
-        page-break-after: always !important; /* 命盤の後で確実に改ページ */
+        page-break-after: always !important;
         text-align: center !important;
       }
 
-      /* 印刷時は縮小を解除し、A4横幅いっぱいに綺麗に100%で出す */
       #chart {
         display: grid !important;
         width: 100% !important;
-        zoom: 1 !important;
-        transform: none !important;
+        min-width: 0 !important;
         margin: 0 auto !important;
       }
 
@@ -164,7 +185,7 @@
       #reading-container {
         display: block !important;
         width: 100% !important;
-        page-break-before: always !important; /* 鑑定書の手前で確実に改ページ */
+        page-break-before: always !important;
         position: static !important;
       }
 
@@ -185,10 +206,27 @@
 </head>
 <body>
 
+<div class="mobile-menu-toggle" id="menu-toggle" onclick="toggleSidebar()">👤 条件入力を開く / 閉じる</div>
+
 <div class="app-layout">
   
+  <div class="main-content">
+    <div class="main-content print-unlocked">
+      <div id="chart-container">
+        <h1>紫微斗数 命盤</h1>
+        <div id="chart" class="grid"></div>
+      </div>
+      
+      <div id="reading-container">
+        <h3>鑑定書・特記事項</h3>
+        <textarea id="reading-text" rows="15"></textarea>
+        <div id="print-reading-text" class="print-only-text"></div>
+      </div>
+    </div>
+  </div>
+
   <div id="sidebar" class="no-print">
-    <h2>命盤データ入力</h2>
+    <h2 class="no-print">命盤データ入力</h2>
     
     <div class="form-group">
       <label>お名前</label>
@@ -234,26 +272,29 @@
       </select>
     </div>
 
-    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="setTimeout(() => { document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200)">命盤を作成する</button>
+    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="closeSidebarAndScroll()">命盤を作成する</button>
     <button id="btn-print" style="width: 100%; background-color: #4CAF50; color: white;">命盤と鑑定内容を印刷</button>
   </div>
 
-  <div class="main-content">
-    <div class="main-content print-unlocked">
-      <div id="chart-container">
-        <h1>紫微斗数 命盤</h1>
-        <div id="chart" class="grid"></div>
-      </div>
-      
-      <div id="reading-container">
-        <h3>鑑定書・特記事項</h3>
-        <textarea id="reading-text" rows="15"></textarea>
-        <div id="print-reading-text" class="print-only-text"></div>
-      </div>
-    </div>
-  </div>
-
 </div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('active');
+  }
+
+  function closeSidebarAndScroll() {
+    // スマホの時だけパネルを閉じる
+    if (window.innerWidth <= 768) {
+      document.getElementById('sidebar').classList.remove('active');
+    }
+    // 命盤までスクロール
+    setTimeout(() => {
+      document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 250);
+  }
+</script>
 
 <script type="module" src="/src/main.js"></script>
 </body>
