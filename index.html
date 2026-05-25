@@ -21,7 +21,7 @@
       flex: 1;
       padding: 20px;
       box-sizing: border-box;
-      min-width: 0; /* flexの子要素がはみ出るのを防ぐ防御策 */
+      min-width: 0;
     }
 
     /* 右側：データ入力サイドバー */
@@ -61,32 +61,29 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けのレスポンシブ対応（縦並び）
+       📱 スマホ向けの画面表示レイアウト（縦並び）
        ----------------------------------------- */
-    @media (max-width: 768px) {
+    @media screen and (max-width: 768px) {
       .app-layout {
-        flex-direction: column; /* 横並びから「縦並び」に変更 */
+        flex-direction: column;
       }
 
-      /* 命盤・鑑定書エリアを上に配置し、横幅をいっぱいに広げる */
       .main-content {
         width: 100%;
-        order: 1; /* 命盤・鑑定書を上にする */
+        order: 1; /* 画面表示時は命盤・鑑定書を上にする */
         padding: 10px;
       }
 
-      /* 1. 命盤コンテナの調整（はみ出してもスクロール可、命盤自体は狭くしない） */
       #chart-container {
         width: 100%;
-        overflow-x: auto; /* 命盤が画面幅を超えたら横スクロール */
+        overflow-x: auto;
         margin-bottom: 20px;
       }
       
       #chart {
-        min-width: 600px; /* 命盤は狭くせず、綺麗な正方形のサイズを維持 */
+        min-width: 600px; /* 画面表示時は命盤の縮小を防ぐ */
       }
 
-      /* 2. 鑑定書コンテナの調整（スマホの画面幅いっぱいに広げる） */
       #reading-container {
         width: 100%;
         box-sizing: border-box;
@@ -94,17 +91,15 @@
         padding: 0 5px;
       }
 
-      /* テキストエリアも画面幅いっぱいに広げる */
       #reading-text {
         width: 100% !important;
         box-sizing: border-box;
       }
 
-      /* 入力パネル（サイドバー）を一番下に回り込ませる */
       #sidebar {
         width: 100%;
         min-width: 100%;
-        order: 2; /* 入力パネルを下にする */
+        order: 2; /* 画面表示時は入力パネルを下にする */
         border-left: none;
         border-top: 1px solid #ddd;
         padding: 20px 10px;
@@ -112,10 +107,68 @@
       }
     }
 
-    /* 印刷用設定 */
+    /* -----------------------------------------
+       🖨 印刷専用の完璧なレイアウト（PC・スマホ共通）
+       ----------------------------------------- */
     @media print {
-      .no-print { display: none !important; }
-      .print-only-text { display: block !important; }
+      /* 不要な要素（サイドバーやボタン）を完全に非表示 */
+      .no-print, button, #sidebar {
+        display: none !important;
+      }
+
+      /* 印刷時の全体の歪みをリセットし、縦一列の配置を強制 */
+      .app-layout {
+        display: block !important;
+        width: 100% !important;
+        min-height: auto !important;
+        background: none !important;
+      }
+
+      .main-content {
+        display: block !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      /* 命盤を印刷用紙の幅（A4など）にジャストフィットさせ、中央寄せにする */
+      #chart-container {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        margin: 0 auto 30px auto !important;
+        text-align: center !important;
+        page-break-inside: avoid; /* 命盤の途中でページが千切れるのを防ぐ */
+      }
+
+      /* 命盤のグリッド自体を印刷幅いっぱいに自動伸縮させる */
+      #chart {
+        width: 100% !important;
+        min-width: 0 !important; /* 600px固定を解除して紙幅に合わせる */
+        max-width: 100% !important;
+        margin: 0 auto !important;
+      }
+
+      /* 鑑定書エリアの調整（必ず命盤の下に配置されるように制御） */
+      #reading-container {
+        display: block !important;
+        width: 100% !important;
+        margin-top: 40px !important;
+        page-break-before: auto !important; /* 基本は連続。溢れたら自然に次ページへ */
+      }
+
+      .print-only-text {
+        display: block !important;
+        width: 100% !important;
+        white-space: pre-wrap !important; /* 改行を維持 */
+        font-size: 14px !important;
+        line-height: 1.6 !important;
+      }
+
+      textarea {
+        display: none !important; /* 印刷時は入力枠を隠す */
+      }
     }
   </style>
 </head>
