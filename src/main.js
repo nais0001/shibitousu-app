@@ -518,18 +518,56 @@ async function renderChart(event) {
         <span class="center-label">格・特記</span>
         <span class="center-value pattern-highlight">${finalPatterns.join(', ')}</span>
       </div>
-      <div class="center-palace" style="position: relative; min-height: 100%;">
-       <div class="meiban-number-label" style="position: absolute; bottom: 5px; left: 5px; font-size: 11px; font-weight: bold; color: #333;">
-         No.：025（3）
-       </div>
-     </div>
+　　　<div class="center-info-item" style="position: absolute; bottom: 8px; left: 10px; text-align: left; margin: 0; padding: 0;">
+        <span class="center-value pattern-highlight" style="font-weight: bold; font-size: 12px; color: #333;">${meibanNumberText}</span>
+      </div>
     `;
     root.appendChild(centerDiv);
 
-    // 144通りの対応表（画像）に基づくマトリクス計算ロジック
+　　// -------------------------------------------------------------
+    // 【変更】ユーザー指定の3表から「命盤番号（No.とカッコ内番号）」を自動判定するロジックを追加
+    // 関数や主要な処理の流れは変えず、内部でマトリクス計算を行います。
+    // -------------------------------------------------------------
     const mingIdx = branchesOrder.indexOf(mingBranch);
     const ziweiIdx = branchesOrder.indexOf(ziweiBranch);
+    
+    // 1. 通し番号（No.）の計算 (001 〜 144)
     const finalPatternNumber = (ziweiIdx * 12) + mingIdx + 1;
+    const noStr = String(finalPatternNumber).padStart(3, '0'); // 3桁固定にする（例: 025）
+
+    // 2. カッコ内番号の計算（3表の規則性を再現）
+    let pValue = 0;
+    if (ziweiIdx < 6) {
+      // 紫微在子〜巳 (行0〜5)
+      if (mingIdx < 6) {
+        pValue = (mingIdx * 12) + ziweiIdx + 1;
+      } else {
+        pValue = ((mingIdx - 6) * 12) + ziweiIdx + 7;
+      }
+    } else {
+      // 紫微在午〜亥 (行6〜11) の直配列マトリクス（提示された表を厳密に再現）
+      const tableBottom = [
+        [73, 85, 97, 109, 121, 133, 79, 91, 103, 115, 127, 139], // 紫微在午
+        [74, 86, 98, 110, 122, 134, 80, 92, 104, 116, 128, 140], // 紫微在未
+        [75, 87, 99, 111, 123, 135, 81, 93, 105, 117, 129, 141], // 紫微在申
+        [76, 88, 100, 112, 124, 136, 82, 94, 106, 118, 130, 142], // 紫微在酉
+        [77, 89, 101, 113, 125, 137, 83, 95, 107, 119, 131, 143], // 紫微在戌
+        [78, 90, 102, 114, 126, 138, 84, 96, 108, 120, 132, 144]  // 紫微在亥
+      ];
+      pValue = tableBottom[ziweiIdx - 6][mingIdx];
+    }
+
+    // 指定された「No.：XXX（YYY）」の形式の文字列を作成
+    const meibanNumberText = `No.：${noStr}（${pValue}）`;
+    // -------------------------------------------------------------
+
+    // HTML出力部分の修正（作成した文字列をそのまま流し込みます）
+    centerDiv.innerHTML = `
+      <div class="center-info-item" style="position: absolute; bottom: 5px; left: 5px; text-align: left;">
+        <span class="center-value pattern-highlight" style="font-weight: bold; font-size: 11px;">${meibanNumberText}</span>
+      </div>
+    `;
+    root.appendChild(centerDiv);
 
     // 鑑定内容エリア（表示ロジック）の自動連動。非同期読み込みのため await を付与
     await updateReadingContent(name || "鑑定ユーザー", finalPatterns, elementalText, finalPatternNumber);
@@ -544,7 +582,7 @@ async function renderChart(event) {
   }
 }
 
-// 鑑定内容のテキスト枠生成と初期化（関数名は変更なし）
+
 // 鑑定内容のテキスト枠生成と初期化（関数名、引数は完全維持）
 async function updateReadingContent(userName, patterns, element, patternNumber = 1) {
   const readingArea = document.getElementById("reading-text");
