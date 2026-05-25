@@ -459,29 +459,3 @@ body {
     border: none !important;
   }
 }
-
-/* 📱 画面幅が768px以下のスマホ・タブレット用の設定 */
-@media (max-width: 768px) {
-  /* 入力パネルと命盤を包んでいる全体のコンテナ */
-  .container, .app-layout, #app { 
-    display: flex;
-    flex-direction: column; /* 👈 横並びから「縦並び」に強制変更 */
-    align-items: center;
-    width: 100%;
-  }
-
-  /* 入力パネルの横幅をスマホいっぱいに広げる */
-  .input-panel, .setup-section {
-    width: 100% !important;
-    max-width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 20px; /* 下に隙間を作って命盤と離す */
-  }
-
-  /* 命盤（チャート）の横幅もスマホに合わせる */
-  .chart-panel, #chart, .meiban-wrap {
-    width: 100% !important;
-    max-width: 100%;
-    overflow-x: auto; /* 👈 万が一はみ出しても横スクロールできるようにする */
-  }
-}
