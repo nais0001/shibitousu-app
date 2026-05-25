@@ -6,7 +6,7 @@
   <title>紫微斗数 命盤作成アプリ</title>
   <style>
     /* -----------------------------------------
-       💻 パソコン向けの基本レイアウト（横並び・元通り）
+       💻 パソコン向けの基本レイアウト（横並び）
        ----------------------------------------- */
     .app-layout {
       display: flex;
@@ -63,7 +63,7 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（スケールバグ完全排除）
+       📱 スマホ向けの画面表示レイアウト
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
@@ -96,13 +96,13 @@
         cursor: pointer;
       }
 
-      /* 開閉式入力パネル */
+      /* 開閉式入力パネル：普段は完全に画面下（-100%）に退避させ、命盤を隠さない */
       #sidebar {
         position: fixed !important;
         bottom: -100%;
         left: 0 !important;
         width: 100% !important;
-        max-height: 80vh !important;
+        max-height: 75vh !important;
         overflow-y: auto !important;
         z-index: 9998;
         background-color: #ffffff !important;
@@ -114,38 +114,63 @@
       }
 
       #sidebar.active {
-        bottom: 0 !important;
+        bottom: 0 !important; /* ボタン押下時のみせり上がる */
       }
 
-      /* 💡 表示エリア制限の解除：はみ出しカット（overflow: hidden）をあえて完全にやめ、
-         中身の命盤が縮小された状態で「ありのまま」全貌を露出させます */
+      /* 命盤を囲む外箱：タイトルも含めて中央配置 */
       #chart-container {
         width: 100% !important;
         max-width: 100% !important;
-        height: auto !important; /* 👈 固定を解除してブラウザのカットバグを防止 */
-        overflow: visible !important; /* 👈 見えない壁を撤廃 */
-        margin-bottom: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
         text-align: center !important;
       }
+
+      /* 💡 命盤タイトルも縮小要素（#chart）の真上中央になるよう配置調整 */
+      #chart-container h1 {
+        font-size: 20px;
+        margin: 10px auto !important;
+        text-align: center !important;
+        width: 100%;
+      }
       
-      /* 💡 縮小による残像（巨大な空白）を、ネガティブマージン（margin-bottom）で美しく相殺 */
+      /* スケール縮小と透明余白の相殺 */
       #chart {
-        width: 600px !important; /* JSがエラーを起こさない絶対幅 */
-        transform: scale(0.53) !important; /* スマホ画面幅にすっぽり収める倍率 */
-        transform-origin: center top !important; /* 中央上を基準に綺麗に縮小 */
+        width: 600px !important; 
+        transform: scale(0.53) !important; 
+        transform-origin: center top !important; 
         margin: 0 auto !important;
         display: grid !important;
-        /* 👈 スケール縮小によって発生する「下側の透明な巨大空間」をマイナスマージンでピッタリ相殺 */
         margin-bottom: -260px !important; 
       }
 
-      /* 💡 鑑定書エリア：命盤のマイナスマージンと連動し、不要な空白なしで直下に配置 */
+      /* 💡 【ご要望】命盤中の星の名前を左寄せにする上書き設定 */
+      #chart .star, 
+      #chart .main-star, 
+      #chart .sub-star, 
+      #chart div[class*="star"] {
+        text-align: left !important;
+        justify-content: flex-start !important;
+        padding-left: 4px !important;
+      }
+
+      /* 💡 【ご要望】大限、小限のテキストを2行（縦並び）に強制変更 */
+      #chart .daigen, 
+      #chart .shogen,
+      #chart .period-text {
+        display: block !important;
+        white-space: pre-line !important;
+        word-break: break-all !important;
+        line-height: 1.2 !important;
+      }
+
+      /* 鑑定書エリア */
       #reading-container {
         width: 100%;
         box-sizing: border-box;
         margin-top: 20px !important;
         position: relative;
-        z-index: 10; /* 縮小された命盤の残像よりも手前に持ち上げる */
+        z-index: 10;
       }
 
       #reading-text {
@@ -155,9 +180,10 @@
     }
 
     /* -----------------------------------------
-       🖨 印刷専用のレイアウト
+       🖨 印刷専用のレイアウト（スマホ印刷バグ完全駆除）
        ----------------------------------------- */
     @media print {
+      /* スマホ用の絶対配置や画面縮小の影響を「完全にリセット」して標準のA4印刷に戻す */
       html, body, .app-layout, .main-content {
         display: block !important;
         width: 100% !important;
@@ -168,35 +194,44 @@
         padding: 0 !important;
       }
 
+      /* 不要パーツの非表示 */
       .no-print, button, #sidebar, .mobile-menu-toggle {
         display: none !important;
       }
 
+      /* 命盤ブロック：1ページ目にクッキリ収め、次のコンテンツの押し出しを確定 */
       #chart-container {
         display: block !important;
         width: 100% !important;
         height: auto !important;
-        page-break-inside: avoid !important;
-        page-break-after: always !important; 
+        page-break-inside: avoid !important; /* 命盤自体のページ分断を禁止 */
+        page-break-after: always !important; /* 👈 命盤が出た直後に【強制改ページ】 */
         text-align: center !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
       }
 
+      /* 印刷時はスマホのscale縮小を100%解除し、綺麗な等倍グリッドへ */
       #chart {
         display: grid !important;
         width: 100% !important;
         transform: none !important;
         margin: 0 auto !important;
-        margin-bottom: 0 !important; /* 印刷時はマージンリセット */
+        margin-bottom: 0 !important;
       }
 
+      /* 印刷時の文字配置：お好みに合わせて中央に綺麗に整列 */
       #chart * {
         text-align: center !important;
       }
 
+      /* 💡 鑑定書エリア：命盤との重なりを100%回避し、2ページ目のド頭から配置 */
       #reading-container {
         display: block !important;
         width: 100% !important;
-        page-break-before: always !important; 
+        page-break-before: always !important; /* 👈 鑑定書が始まる直前に【強制改ページ】 */
+        margin-top: 0 !important;
+        padding-top: 20px !important;
         position: static !important;
       }
 
