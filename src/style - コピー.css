@@ -1,0 +1,39 @@
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.grid {
+  display: grid;
+  /* 紫微斗数の標準的な配置（4x4の周回）にする前の簡易4列グリッド */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.palace {
+  border: 1px solid #333;
+  background-color: #fff;
+  padding: 10px;
+  min-height: 180px;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 18px;
+  color: #c00;
+  border-bottom: 1px dashed #ccc;
+  padding-bottom: 3px;
+  margin-bottom: 5px;
+}
+
+.stem-branch {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.star {
+  margin-left: 5px;
+  font-size: 14px;
+}
