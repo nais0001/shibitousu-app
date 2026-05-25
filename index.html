@@ -63,7 +63,7 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（描画レイヤースケール縮修版）
+       📱 スマホ向けの画面表示レイアウト
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
@@ -117,23 +117,24 @@
         bottom: 0 !important;
       }
 
-      /* 💡 命盤を囲む外箱：はみ出しを絶対に禁止し、縮小によって生じる余白を綺麗に相殺する */
+      /* 命盤を囲む外箱：中央に縮小された命盤を綺麗に閉じ込める */
       #chart-container {
         width: 100% !important;
         max-width: 100% !important;
         overflow: hidden !important; 
         margin-bottom: 20px;
-        height: 380px !important; /* スケール縮小後の命盤の実際に見える高さに固定 */
+        height: 380px !important; /* 縮小後の命盤の高さにフィット */
+        text-align: center !important;
       }
       
-      /* 💡 【解決策】JS本来の「横幅600px」のまま完璧に描画させた直後、
-         CSS3のグラフィック機能（transform）で、箱ごと55%（スマホ幅）に一発縮小します。
-         これで右端が切れず、12マスの全体が1画面にきれいに収まります。 */
+      /* 💡 【解決策】縮小の基準点を「画面の中央（center top）」に修正。
+         これで縮小された命盤が左上に吹っ飛ぶバグを完全に修正し、画面のド真ん中に全貌が表示されます。 */
       #chart {
-        width: 600px !important; /* JSが計算する本来の幅を維持 */
-        transform: scale(0.55) !important; /* 👈 スマホ幅（約330px相当）に全体を丸ごと縮小 */
-        transform-origin: top left !important; /* 左上を基準に縮小 */
+        width: 600px !important; /* JSの自動計算用ベースサイズ */
+        transform: scale(0.53) !important; /* 一般的なスマホの画面幅（320px〜390px）に合わせて最適化 */
+        transform-origin: center top !important; /* 👈 左上から「中央上」を基準に変更 */
         margin: 0 auto !important;
+        display: grid !important;
       }
 
       #reading-container {
@@ -149,7 +150,7 @@
     }
 
     /* -----------------------------------------
-       🖨 印刷専用のレイアウト（改ページバグ対策済）
+       🖨 印刷専用のレイアウト
        ----------------------------------------- */
     @media print {
       html, body, .app-layout, .main-content {
@@ -169,13 +170,13 @@
       #chart-container {
         display: block !important;
         width: 100% !important;
-        height: auto !important; /* 印刷時は高さ制限を解除 */
+        height: auto !important;
         page-break-inside: avoid !important;
         page-break-after: always !important; /* 命盤の後で確実に改ページ */
         text-align: center !important;
       }
 
-      /* 💡 印刷時はスマホの縮小（scale）を完全に解除し、A4横幅いっぱいに等倍で出す */
+      /* 印刷時は縮小を完全に解除し、等倍に戻してA4横幅いっぱいに印刷 */
       #chart {
         display: grid !important;
         width: 100% !important;
