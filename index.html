@@ -10,7 +10,7 @@
        ----------------------------------------- */
     .app-layout {
       display: flex;
-      flex-direction: row;
+      flex-direction: row; /* PCは横並び */
       width: 100%;
       min-height: 100vh;
       box-sizing: border-box;
@@ -65,12 +65,24 @@
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
-        flex-direction: column;
+        flex-direction: column; /* スマホは縦並び */
       }
 
+      /* 💡 ご提案通り、スマホでは入力パネル（サイドバー）を「上」に配置 */
+      #sidebar {
+        width: 100%;
+        min-width: 100%;
+        order: 1; /* 入力パネルを1番目（上）にする */
+        border-left: none;
+        border-bottom: 1px solid #ddd; /* 下側に境界線 */
+        padding: 20px 10px;
+        box-sizing: border-box;
+      }
+
+      /* 命盤・鑑定書エリアを「下」に配置 */
       .main-content {
         width: 100%;
-        order: 1;
+        order: 2; /* 命盤・鑑定書を2番目（下）にする */
         padding: 10px;
       }
 
@@ -95,20 +107,10 @@
         width: 100% !important;
         box-sizing: border-box;
       }
-
-      #sidebar {
-        width: 100%;
-        min-width: 100%;
-        order: 2;
-        border-left: none;
-        border-top: 1px solid #ddd;
-        padding: 20px 10px;
-        box-sizing: border-box;
-      }
     }
 
     /* -----------------------------------------
-       🖨 印刷専用のレイアウト（位置移動の差し戻し）
+       🖨 印刷専用のレイアウト
        ----------------------------------------- */
     @media print {
       .no-print, button, #sidebar {
@@ -118,59 +120,31 @@
       .app-layout {
         display: block !important;
         width: 100% !important;
-        min-height: auto !important;
-        background: none !important;
       }
 
       .main-content {
         display: block !important;
         width: 100% !important;
         padding: 0 !important;
-        margin: 0 !important;
       }
 
-      /* タイトルの位置をデフォルトに戻す */
-      #chart-container h1 {
-        margin-top: 0 !important;
-        margin-bottom: 20px !important;
-      }
-
-      /* 命盤の2cm右移動を解除し、標準の幅と配置に戻す */
       #chart-container {
-        display: block !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow: visible !important;
-        page-break-inside: avoid;
         text-align: center !important;
       }
 
       #chart {
         width: 100% !important;
         min-width: 0 !important;
-        max-width: 100% !important;
-        margin: 0 auto !important; /* 中央揃えに復元 */
+        margin: 0 auto !important;
       }
 
-      /* 格宮内の星のセンタリングを保証 */
       #chart * {
         text-align: center !important;
       }
 
-      /* 鑑定書エリアの調整 */
-      #reading-container {
-        display: block !important;
-        width: 100% !important;
-        margin-top: 40px !important;
-        page-break-before: auto !important;
-      }
-
       .print-only-text {
         display: block !important;
-        width: 100% !important;
         white-space: pre-wrap !important;
-        font-size: 14px !important;
-        line-height: 1.6 !important;
         text-align: left !important;
       }
 
@@ -186,7 +160,6 @@
   
   <div class="main-content">
     <div class="main-content print-unlocked">
-      
       <div id="chart-container">
         <h1>紫微斗数 命盤</h1>
         <div id="chart" class="grid"></div>
@@ -197,7 +170,6 @@
         <textarea id="reading-text" rows="15"></textarea>
         <div id="print-reading-text" class="print-only-text"></div>
       </div>
-      
     </div>
   </div>
 
