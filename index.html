@@ -59,29 +59,17 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト
+       📱 スマホ向けの画面表示レイアウト（CSS3ズーム縮小方式）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
-      html, body {
-        position: static;
-        overflow: auto;
-        overflow-y: scroll;
-        height: auto;
-        min-height: 100%;
-      }
-
       .app-layout {
-        display: block;
-        width: 100%;
-        height: auto;
+        display: flex;
+        flex-direction: column; /* 確実に縦並びにする */
       }
 
       #sidebar {
-        display: block;
-        position: static;
         width: 100%;
         min-width: 100%;
-        height: auto;
         border-right: none;
         border-bottom: 1px solid #ddd;
         padding: 20px 10px;
@@ -89,45 +77,36 @@
       }
 
       .main-content {
-        display: block;
         width: 100%;
         padding: 10px;
+        box-sizing: border-box;
       }
 
+      /* 💡 JSの描画バグを防ぐため、コンテナの制限を完全に撤廃 */
       #chart-container {
         width: 100%;
-        max-width: 100%;
-        overflow: hidden;
+        overflow: visible;
         margin-bottom: 20px;
       }
       
-      /* 💡 罫線消失対策：幅を少しだけ絞り、左右マージンを自動にすることで右端の線切れを防止 */
-      #chart, .grid {
-        width: calc(100% - 2px) !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
+      /* 💡 【解決策】JSが想定する「元のサイズ」で一度100%正しく描画させ、
+         その後にCSSの `zoom`（または `transform`）を使って、スマホの画面幅に合わせて箱ごと縮小します。
+         これによりプログラムの計算が狂わず、確実に命盤が出現します。 */
+      #chart {
+        display: grid !important; /* JSの元設定を維持 */
+        width: 600px !important;  /* JSが計算しやすい元のサイズを保証 */
+        zoom: 0.6;                /* 👈 画面幅に合わせて一括で60%に縮小表示（文字も線も全て連動） */
+        transform-origin: top left;
         margin: 0 auto !important;
-        grid-template-columns: repeat(4, 25%) !important; 
-        grid-auto-rows: minmax(70px, auto) !important;
-        gap: 0 !important; /* 隙間によるバグを防ぐため0に、境界線はマスのborderで維持 */
-        box-sizing: border-box !important;
+        box-sizing: border-box;
       }
 
-      #chart > div, .palace {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        height: auto !important;
-        min-height: 0 !important;
-        padding: 4px !important;
-        font-size: 11px !important;
-        box-sizing: border-box !important;
-      }
-
-      #chart * {
-        font-size: 10px !important;
-        line-height: 1.2 !important;
-        box-sizing: border-box !important;
+      /* お使いのブラウザがzoom未対応だった場合のフォールバック（Safari対策） */
+      @supports not (zoom: 0.6) {
+        #chart {
+          transform: scale(0.6) !important;
+          margin-bottom: -240px !important; /* スケール縮小で生じる下の余白を相殺 */
+        }
       }
 
       #reading-container {
@@ -144,10 +123,9 @@
     }
 
     /* -----------------------------------------
-       🖨 印刷専用の完璧なレイアウト（スマホ印刷バグ修正）
+       🖨 印刷専用の完璧なレイアウト
        ----------------------------------------- */
     @media print {
-      /* スマホ用の画面表示設定をすべて強制リセットして印刷標準に戻す */
       html, body, .app-layout, .main-content {
         display: block !important;
         width: 100% !important;
@@ -158,42 +136,35 @@
         padding: 0 !important;
       }
 
-      /* 不要な要素を非表示 */
       .no-print, button, #sidebar {
         display: none !important;
       }
 
-      /* 命盤コンテナの印刷最適化 */
       #chart-container {
         display: block !important;
         width: 100% !important;
-        page-break-inside: avoid !important; /* 命盤が途中で分裂するのを防止 */
-        page-break-after: always !important; /* 👈 命盤の後で【絶対に改ページ】して2ページ目へ送る */
+        page-break-inside: avoid !important;
+        page-break-after: always !important; /* 命盤の後で確実に改ページ */
         text-align: center !important;
-        margin-bottom: 0 !important;
       }
 
-      /* 印刷時の命盤の幅を100%に復元（罫線も綺麗に出るように設定） */
+      /* 印刷時は縮小を解除し、A4横幅いっぱいに綺麗に100%で出す */
       #chart {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        margin: 0 auto !important;
-        grid-template-columns: repeat(4, 25%) !important; /* 印刷時も均等4分割 */
         display: grid !important;
+        width: 100% !important;
+        zoom: 1 !important;
+        transform: none !important;
+        margin: 0 auto !important;
       }
 
       #chart * {
         text-align: center !important;
-        font-size: 12pt !important; /* 印刷用に文字サイズを最適化 */
       }
 
-      /* 💡 鑑定書エリア：命盤との重なりを完全に回避し、2ページ目の先頭から配置 */
       #reading-container {
         display: block !important;
         width: 100% !important;
-        page-break-before: always !important; /* 👈 鑑定書の手前で【絶対に改ページ】 */
-        margin-top: 0 !important;
+        page-break-before: always !important; /* 鑑定書の手前で確実に改ページ */
         position: static !important;
       }
 
