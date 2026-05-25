@@ -63,7 +63,7 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト
+       📱 スマホ向けの画面表示レイアウト（無駄な空間の排除）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
@@ -96,7 +96,7 @@
         cursor: pointer;
       }
 
-      /* 開閉式入力パネル（JSの邪魔をしない画面外退避方式） */
+      /* 開閉式入力パネル */
       #sidebar {
         position: fixed !important;
         bottom: -100%;
@@ -117,30 +117,30 @@
         bottom: 0 !important;
       }
 
-      /* 命盤を囲む外箱：中央に縮小された命盤を綺麗に閉じ込める */
+      /* 💡 不要空間の徹底排除：
+         縮小後の命盤のリアルな高さ（約320px）に合わせて箱を制限し、はみ出た透明な余白を完全にシャットアウト */
       #chart-container {
         width: 100% !important;
         max-width: 100% !important;
+        height: 330px !important; /* 👈 高さをジャストサイズに絞り、下の空間を削る */
         overflow: hidden !important; 
-        margin-bottom: 20px;
-        height: 380px !important; /* 縮小後の命盤の高さにフィット */
-        text-align: center !important;
+        margin-bottom: 0 !important;  /* 👈 余計な下マージンをゼロに */
       }
       
-      /* 💡 【解決策】縮小の基準点を「画面の中央（center top）」に修正。
-         これで縮小された命盤が左上に吹っ飛ぶバグを完全に修正し、画面のド真ん中に全貌が表示されます。 */
       #chart {
-        width: 600px !important; /* JSの自動計算用ベースサイズ */
-        transform: scale(0.53) !important; /* 一般的なスマホの画面幅（320px〜390px）に合わせて最適化 */
-        transform-origin: center top !important; /* 👈 左上から「中央上」を基準に変更 */
+        width: 600px !important; 
+        transform: scale(0.53) !important; 
+        transform-origin: center top !important; 
         margin: 0 auto !important;
         display: grid !important;
       }
 
+      /* 💡 鑑定書エリア：無駄な隙間を詰め、命盤のすぐ下にピッタリ密着させる */
       #reading-container {
         width: 100%;
         box-sizing: border-box;
-        margin-top: 10px;
+        margin-top: 0 !important; /* 👈 命盤との間の隙間をゼロに調整 */
+        padding-top: 0 !important;
       }
 
       #reading-text {
@@ -170,13 +170,12 @@
       #chart-container {
         display: block !important;
         width: 100% !important;
-        height: auto !important;
+        height: auto !important; /* 印刷時は縮小を解くので高さ制限を解除 */
         page-break-inside: avoid !important;
-        page-break-after: always !important; /* 命盤の後で確実に改ページ */
+        page-break-after: always !important; 
         text-align: center !important;
       }
 
-      /* 印刷時は縮小を完全に解除し、等倍に戻してA4横幅いっぱいに印刷 */
       #chart {
         display: grid !important;
         width: 100% !important;
@@ -191,7 +190,7 @@
       #reading-container {
         display: block !important;
         width: 100% !important;
-        page-break-before: always !important; /* 鑑定書の手前で確実に改ページ */
+        page-break-before: always !important; 
         position: static !important;
       }
 
