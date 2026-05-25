@@ -63,7 +63,7 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（無駄な空間の排除）
+       📱 スマホ向けの画面表示レイアウト（スケールバグ完全排除）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
@@ -117,30 +117,35 @@
         bottom: 0 !important;
       }
 
-      /* 💡 不要空間の徹底排除：
-         縮小後の命盤のリアルな高さ（約320px）に合わせて箱を制限し、はみ出た透明な余白を完全にシャットアウト */
+      /* 💡 表示エリア制限の解除：はみ出しカット（overflow: hidden）をあえて完全にやめ、
+         中身の命盤が縮小された状態で「ありのまま」全貌を露出させます */
       #chart-container {
         width: 100% !important;
         max-width: 100% !important;
-        height: 330px !important; /* 👈 高さをジャストサイズに絞り、下の空間を削る */
-        overflow: hidden !important; 
-        margin-bottom: 0 !important;  /* 👈 余計な下マージンをゼロに */
+        height: auto !important; /* 👈 固定を解除してブラウザのカットバグを防止 */
+        overflow: visible !important; /* 👈 見えない壁を撤廃 */
+        margin-bottom: 0 !important;
+        text-align: center !important;
       }
       
+      /* 💡 縮小による残像（巨大な空白）を、ネガティブマージン（margin-bottom）で美しく相殺 */
       #chart {
-        width: 600px !important; 
-        transform: scale(0.53) !important; 
-        transform-origin: center top !important; 
+        width: 600px !important; /* JSがエラーを起こさない絶対幅 */
+        transform: scale(0.53) !important; /* スマホ画面幅にすっぽり収める倍率 */
+        transform-origin: center top !important; /* 中央上を基準に綺麗に縮小 */
         margin: 0 auto !important;
         display: grid !important;
+        /* 👈 スケール縮小によって発生する「下側の透明な巨大空間」をマイナスマージンでピッタリ相殺 */
+        margin-bottom: -260px !important; 
       }
 
-      /* 💡 鑑定書エリア：無駄な隙間を詰め、命盤のすぐ下にピッタリ密着させる */
+      /* 💡 鑑定書エリア：命盤のマイナスマージンと連動し、不要な空白なしで直下に配置 */
       #reading-container {
         width: 100%;
         box-sizing: border-box;
-        margin-top: 0 !important; /* 👈 命盤との間の隙間をゼロに調整 */
-        padding-top: 0 !important;
+        margin-top: 20px !important;
+        position: relative;
+        z-index: 10; /* 縮小された命盤の残像よりも手前に持ち上げる */
       }
 
       #reading-text {
@@ -170,7 +175,7 @@
       #chart-container {
         display: block !important;
         width: 100% !important;
-        height: auto !important; /* 印刷時は縮小を解くので高さ制限を解除 */
+        height: auto !important;
         page-break-inside: avoid !important;
         page-break-after: always !important; 
         text-align: center !important;
@@ -181,6 +186,7 @@
         width: 100% !important;
         transform: none !important;
         margin: 0 auto !important;
+        margin-bottom: 0 !important; /* 印刷時はマージンリセット */
       }
 
       #chart * {
