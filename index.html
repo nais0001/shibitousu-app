@@ -59,7 +59,7 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（縮小表示）
+       📱 スマホ向けの画面表示レイアウト（超強力・縮小リセット）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       html, body {
@@ -74,8 +74,6 @@
         display: block !important;
         width: 100% !important;
         height: auto !important;
-        position: static !important;
-        overflow: visible !important;
       }
 
       #sidebar {
@@ -93,32 +91,45 @@
       .main-content {
         display: block !important;
         width: 100% !important;
-        height: auto !important;
-        position: static !important;
         padding: 10px;
-        overflow: visible !important;
       }
 
-      /* 💡 命盤コンテナの調整：はみ出しを防ぎ、綺麗に収める */
       #chart-container {
         width: 100% !important;
         max-width: 100% !important;
-        overflow: visible !important;
+        overflow: hidden !important; /* はみ出しを禁止して画面内に閉じ込める */
         margin-bottom: 20px;
       }
       
-      /* 💡 命盤全体の縮小：固定幅を完全に破壊し、スマホ幅（100%）に強制フィット */
-      #chart {
+      /* 🚨 【重要】JS側の固定幅設定（600pxや固定px）を完全に破壊して上書き */
+      #chart, .grid {
         width: 100% !important;
-        min-width: 0 !important; /* 👈 600pxなどの固定を解除 */
+        min-width: 0 !important;
         max-width: 100% !important;
+        /* 4列のグリッド幅を一律「等分割（25%ずつ）」に強制変更 */
+        grid-template-columns: repeat(4, 25%) !important; 
+        grid-auto-rows: minmax(70px, auto) !important; /* 高さもスマホ用にコンパクト化 */
+        gap: 2px !important; /* 宮と宮の間隔を詰めて外出しを防ぐ */
         box-sizing: border-box !important;
       }
 
-      /* 💡 命盤の中の各宮（マス）や文字も、スマホ幅に合わせて自動縮小させる設定 */
-      #chart, #chart * {
-        box-sizing: border-box !important;
+      /* 🚨 【重要】各宮（マス）のサイズ制限もすべて解除し、文字を自動縮小 */
+      #chart > div, .palace {
+        width: 100% !important;
+        min-width: 0 !important;
         max-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 4px !important; /* 余白を狭くして文字が入るスペースを確保 */
+        font-size: 11px !important; /* 👈 文字サイズを小さくして、はみ出しによる枠の崩れを防止 */
+        box-sizing: border-box !important;
+      }
+
+      /* 星の文字や宮の名前など、内側のテキストもすべて一回り縮小 */
+      #chart * {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        box-sizing: border-box !important;
       }
 
       #reading-container {
