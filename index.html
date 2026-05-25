@@ -70,7 +70,7 @@
 
       .main-content {
         width: 100%;
-        order: 1; /* 画面表示時は命盤・鑑定書を上にする */
+        order: 1;
         padding: 10px;
       }
 
@@ -81,7 +81,7 @@
       }
       
       #chart {
-        min-width: 600px; /* 画面表示時は命盤の縮小を防ぐ */
+        min-width: 600px;
       }
 
       #reading-container {
@@ -99,7 +99,7 @@
       #sidebar {
         width: 100%;
         min-width: 100%;
-        order: 2; /* 画面表示時は入力パネルを下にする */
+        order: 2;
         border-left: none;
         border-top: 1px solid #ddd;
         padding: 20px 10px;
@@ -108,15 +108,14 @@
     }
 
     /* -----------------------------------------
-       🖨 印刷専用の完璧なレイアウト（PC・スマホ共通）
+       🖨 印刷専用の完璧なレイアウト
        ----------------------------------------- */
     @media print {
-      /* 不要な要素（サイドバーやボタン）を完全に非表示 */
+      /* 不要な要素を完全に非表示 */
       .no-print, button, #sidebar {
         display: none !important;
       }
 
-      /* 印刷時の全体の歪みをリセットし、縦一列の配置を強制 */
       .app-layout {
         display: block !important;
         width: 100% !important;
@@ -131,43 +130,54 @@
         margin: 0 !important;
       }
 
-      /* 命盤を印刷用紙の幅（A4など）にジャストフィットさせ、中央寄せにする */
+      /* 1. タイトルを上に2cm移動 */
+      #chart-container h1 {
+        margin-top: -2cm !important;
+        margin-bottom: 1cm !important;
+      }
+
       #chart-container {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
         overflow: visible !important;
-        margin: 0 auto 30px auto !important;
-        text-align: center !important;
-        page-break-inside: avoid; /* 命盤の途中でページが千切れるのを防ぐ */
+        page-break-inside: avoid;
+        text-align: left !important; /* 命盤の右移動に伴いベースを左寄せにリセット */
       }
 
-      /* 命盤のグリッド自体を印刷幅いっぱいに自動伸縮させる */
+      /* 2. 命盤全体を右に2cm移動（内部の星は中央揃えのまま） */
       #chart {
-        width: 100% !important;
-        min-width: 0 !important; /* 600px固定を解除して紙幅に合わせる */
+        width: calc(100% - 2cm) !important; /* はみ出し防止に幅を調整 */
+        min-width: 0 !important;
         max-width: 100% !important;
-        margin: 0 auto !important;
+        margin-left: 2cm !important; /* 👈 命盤全体を右に2cm移動 */
+        margin-right: 0 !important;
       }
 
-      /* 鑑定書エリアの調整（必ず命盤の下に配置されるように制御） */
+      /* ⚠️ 格宮の星が左に寄るのを防ぐため、テキストの中央揃えを保証 */
+      #chart * {
+        text-align: center !important; /* 👈 宮の内部テキストは常に中央表示に戻す */
+      }
+
+      /* 3. 鑑定書エリアの調整 */
       #reading-container {
         display: block !important;
         width: 100% !important;
         margin-top: 40px !important;
-        page-break-before: auto !important; /* 基本は連続。溢れたら自然に次ページへ */
+        page-break-before: auto !important;
       }
 
       .print-only-text {
         display: block !important;
         width: 100% !important;
-        white-space: pre-wrap !important; /* 改行を維持 */
+        white-space: pre-wrap !important;
         font-size: 14px !important;
         line-height: 1.6 !important;
+        text-align: left !important; /* 鑑定文は左詰めで読みやすく */
       }
 
       textarea {
-        display: none !important; /* 印刷時は入力枠を隠す */
+        display: none !important;
       }
     }
   </style>
