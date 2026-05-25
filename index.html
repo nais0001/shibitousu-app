@@ -10,13 +10,12 @@
        ----------------------------------------- */
     .app-layout {
       display: flex;
-      flex-direction: row; /* PCは横並び */
+      flex-direction: row;
       width: 100%;
       min-height: 100vh;
       box-sizing: border-box;
     }
 
-    /* 左側：メインコンテンツ（命盤・鑑定書） */
     .main-content {
       flex: 1;
       padding: 20px;
@@ -24,7 +23,6 @@
       min-width: 0;
     }
 
-    /* 右側：データ入力サイドバー */
     #sidebar {
       width: 320px;
       min-width: 320px;
@@ -65,24 +63,22 @@
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       .app-layout {
-        flex-direction: column; /* スマホは縦並び */
+        flex-direction: column;
       }
 
-      /* 💡 ご提案通り、スマホでは入力パネル（サイドバー）を「上」に配置 */
       #sidebar {
         width: 100%;
         min-width: 100%;
-        order: 1; /* 入力パネルを1番目（上）にする */
+        order: 1; /* 入力パネルを上 */
         border-left: none;
-        border-bottom: 1px solid #ddd; /* 下側に境界線 */
+        border-bottom: 1px solid #ddd;
         padding: 20px 10px;
         box-sizing: border-box;
       }
 
-      /* 命盤・鑑定書エリアを「下」に配置 */
       .main-content {
         width: 100%;
-        order: 2; /* 命盤・鑑定書を2番目（下）にする */
+        order: 2; /* 命盤を下 */
         padding: 10px;
       }
 
@@ -116,38 +112,26 @@
       .no-print, button, #sidebar {
         display: none !important;
       }
-
-      .app-layout {
+      .app-layout, .main-content {
         display: block !important;
         width: 100% !important;
       }
-
-      .main-content {
-        display: block !important;
-        width: 100% !important;
-        padding: 0 !important;
-      }
-
       #chart-container {
         text-align: center !important;
       }
-
       #chart {
         width: 100% !important;
         min-width: 0 !important;
         margin: 0 auto !important;
       }
-
       #chart * {
         text-align: center !important;
       }
-
       .print-only-text {
         display: block !important;
         white-space: pre-wrap !important;
         text-align: left !important;
       }
-
       textarea {
         display: none !important;
       }
@@ -220,7 +204,7 @@
       </select>
     </div>
 
-    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;">命盤を作成する</button>
+    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="setTimeout(() => document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' }), 100)">命盤を作成する</button>
     <button id="btn-print" style="width: 100%; background-color: #4CAF50; color: white;">命盤と鑑定内容を印刷</button>
   </div>
 
