@@ -1,30 +1,125 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <script type="module" src="/@vite/client"></script>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>紫微斗数 命盤作成アプリ</title>
+  <style>
+    /* -----------------------------------------
+       💻 パソコン向けの基本レイアウト（横並び）
+       ----------------------------------------- */
+    .app-layout {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* 左側：メインコンテンツ（命盤・鑑定書） */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* 右側：データ入力サイドバー */
+    #sidebar {
+      width: 320px;
+      min-width: 320px;
+      background-color: #f5f5f5;
+      padding: 20px;
+      box-sizing: border-box;
+      border-left: 1px solid #ddd;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input, .form-group select, #reading-text {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* -----------------------------------------
+       📱 スマホ向けのレスポンシブ対応（縦並び）
+       ----------------------------------------- */
+    @media (max-width: 768px) {
+      .app-layout {
+        flex-direction: column; /* 横並びから「縦並び」に変更 */
+      }
+
+      /* 命盤エリアを上に配置し、横幅をいっぱいに広げる */
+      .main-content {
+        width: 100%;
+        order: 1; /* 命盤を最初（上）にする */
+        padding: 10px;
+      }
+
+      /* 入力パネル（サイドバー）を下に回り込ませる */
+      #sidebar {
+        width: 100%;
+        min-width: 100%;
+        order: 2; /* 入力パネルを後（下）にする */
+        border-left: none;
+        border-top: 1px solid #ddd;
+        padding: 20px 10px;
+      }
+
+      /* 命盤（グリッド）がスマホ画面からはみ出る場合は横スクロール可能にする防御策 */
+      #chart-container {
+        width: 100%;
+        overflow-x: auto;
+      }
+      
+      #chart {
+        min-width: 600px; /* 命盤の形が潰れないよう最小幅を確保（必要に応じて調整） */
+      }
+    }
+
+    /* 印刷用設定（既存のクラス名維持用） */
+    @media print {
+      .no-print { display: none !important; }
+      .print-only-text { display: block !important; }
+    }
+  </style>
 </head>
 <body>
 
 <div class="app-layout">
   
   <div class="main-content">
-    
     <div class="main-content print-unlocked">
-    
-    <div id="chart-container">
-      <h1>紫微斗数 命盤</h1>
-      <div id="chart" class="grid"></div>
+      <div id="chart-container">
+        <h1>紫微斗数 命盤</h1>
+        <div id="chart" class="grid"></div>
+      </div>
+      
+      <div id="reading-container" class="page-break">
+        <h3>鑑定書・特記事項</h3>
+        <textarea id="reading-text" rows="15"></textarea>
+        <div id="print-reading-text" class="print-only-text"></div>
+      </div>
     </div>
-    
-    <div id="reading-container" class="page-break">
-      <h3>鑑定書・特記事項</h3>
-      <textarea id="reading-text" rows="15"></textarea>
-      <div id="print-reading-text" class="print-only-text"></div>
-    </div>
-
-  </div></div>
+  </div>
 
   <div id="sidebar" class="no-print">
     <h2>命盤データ入力</h2>
