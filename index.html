@@ -59,42 +59,37 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（強制スクロール解放）
+       📱 スマホ向けの画面表示レイアウト（縮小表示）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
-      /* 🚨 画面をロックしている可能性のある上位要素をすべて強制解除 */
       html, body {
         position: static !important;
         overflow: auto !important;
-        overflow-y: scroll !important; /* 縦スクロールバーを絶対に強制出現させる */
+        overflow-y: scroll !important;
         height: auto !important;
         min-height: 100% !important;
       }
 
       .app-layout {
-        display: block !important; /* flexによる固定を解除し、純粋な縦並びにする */
+        display: block !important;
         width: 100% !important;
         height: auto !important;
         position: static !important;
         overflow: visible !important;
       }
 
-      /* 入力パネルの前面フリーズ・固定化を徹底的に破壊 */
       #sidebar {
         display: block !important;
-        position: static !important; /* 👈 fixed や absolute で前面固定されていた場合、これを通常位置に強制送還 */
+        position: static !important;
         width: 100% !important;
         min-width: 100% !important;
-        height: auto !important; /* 100vh などの画面ぴったり固定を解除 */
+        height: auto !important;
         border-right: none;
         border-bottom: 1px solid #ddd;
         padding: 20px 10px;
         box-sizing: border-box;
-        transform: none !important;
-        overflow: visible !important;
       }
 
-      /* 命盤・鑑定書エリア */
       .main-content {
         display: block !important;
         width: 100% !important;
@@ -104,14 +99,26 @@
         overflow: visible !important;
       }
 
+      /* 💡 命盤コンテナの調整：はみ出しを防ぎ、綺麗に収める */
       #chart-container {
-        width: 100%;
-        overflow-x: auto !important; /* 命盤の横スクロールだけは維持 */
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
         margin-bottom: 20px;
       }
       
+      /* 💡 命盤全体の縮小：固定幅を完全に破壊し、スマホ幅（100%）に強制フィット */
       #chart {
-        min-width: 600px;
+        width: 100% !important;
+        min-width: 0 !important; /* 👈 600pxなどの固定を解除 */
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      /* 💡 命盤の中の各宮（マス）や文字も、スマホ幅に合わせて自動縮小させる設定 */
+      #chart, #chart * {
+        box-sizing: border-box !important;
+        max-width: 100% !important;
       }
 
       #reading-container {
