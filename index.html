@@ -21,6 +21,7 @@
       flex: 1;
       padding: 20px;
       box-sizing: border-box;
+      min-width: 0; /* flexの子要素がはみ出るのを防ぐ防御策 */
     }
 
     /* 右側：データ入力サイドバー */
@@ -67,35 +68,51 @@
         flex-direction: column; /* 横並びから「縦並び」に変更 */
       }
 
-      /* 命盤エリアを上に配置し、横幅をいっぱいに広げる */
+      /* 命盤・鑑定書エリアを上に配置し、横幅をいっぱいに広げる */
       .main-content {
         width: 100%;
-        order: 1; /* 命盤を最初（上）にする */
+        order: 1; /* 命盤・鑑定書を上にする */
         padding: 10px;
       }
 
-      /* 入力パネル（サイドバー）を下に回り込ませる */
-      #sidebar {
-        width: 100%;
-        min-width: 100%;
-        order: 2; /* 入力パネルを後（下）にする */
-        border-left: none;
-        border-top: 1px solid #ddd;
-        padding: 20px 10px;
-      }
-
-      /* 命盤（グリッド）がスマホ画面からはみ出る場合は横スクロール可能にする防御策 */
+      /* 1. 命盤コンテナの調整（はみ出してもスクロール可、命盤自体は狭くしない） */
       #chart-container {
         width: 100%;
-        overflow-x: auto;
+        overflow-x: auto; /* 命盤が画面幅を超えたら横スクロール */
+        margin-bottom: 20px;
       }
       
       #chart {
-        min-width: 600px; /* 命盤の形が潰れないよう最小幅を確保（必要に応じて調整） */
+        min-width: 600px; /* 命盤は狭くせず、綺麗な正方形のサイズを維持 */
+      }
+
+      /* 2. 鑑定書コンテナの調整（スマホの画面幅いっぱいに広げる） */
+      #reading-container {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 20px;
+        padding: 0 5px;
+      }
+
+      /* テキストエリアも画面幅いっぱいに広げる */
+      #reading-text {
+        width: 100% !important;
+        box-sizing: border-box;
+      }
+
+      /* 入力パネル（サイドバー）を一番下に回り込ませる */
+      #sidebar {
+        width: 100%;
+        min-width: 100%;
+        order: 2; /* 入力パネルを下にする */
+        border-left: none;
+        border-top: 1px solid #ddd;
+        padding: 20px 10px;
+        box-sizing: border-box;
       }
     }
 
-    /* 印刷用設定（既存のクラス名維持用） */
+    /* 印刷用設定 */
     @media print {
       .no-print { display: none !important; }
       .print-only-text { display: block !important; }
@@ -108,6 +125,7 @@
   
   <div class="main-content">
     <div class="main-content print-unlocked">
+      
       <div id="chart-container">
         <h1>紫微斗数 命盤</h1>
         <div id="chart" class="grid"></div>
@@ -118,6 +136,7 @@
         <textarea id="reading-text" rows="15"></textarea>
         <div id="print-reading-text" class="print-only-text"></div>
       </div>
+      
     </div>
   </div>
 
