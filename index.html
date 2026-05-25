@@ -59,29 +59,29 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（超強力・縮小リセット）
+       📱 スマホ向けの画面表示レイアウト
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
       html, body {
-        position: static !important;
-        overflow: auto !important;
-        overflow-y: scroll !important;
-        height: auto !important;
-        min-height: 100% !important;
+        position: static;
+        overflow: auto;
+        overflow-y: scroll;
+        height: auto;
+        min-height: 100%;
       }
 
       .app-layout {
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
+        display: block;
+        width: 100%;
+        height: auto;
       }
 
       #sidebar {
-        display: block !important;
-        position: static !important;
-        width: 100% !important;
-        min-width: 100% !important;
-        height: auto !important;
+        display: block;
+        position: static;
+        width: 100%;
+        min-width: 100%;
+        height: auto;
         border-right: none;
         border-bottom: 1px solid #ddd;
         padding: 20px 10px;
@@ -89,43 +89,41 @@
       }
 
       .main-content {
-        display: block !important;
-        width: 100% !important;
+        display: block;
+        width: 100%;
         padding: 10px;
       }
 
       #chart-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow: hidden !important; /* はみ出しを禁止して画面内に閉じ込める */
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
         margin-bottom: 20px;
       }
       
-      /* 🚨 【重要】JS側の固定幅設定（600pxや固定px）を完全に破壊して上書き */
+      /* 💡 罫線消失対策：幅を少しだけ絞り、左右マージンを自動にすることで右端の線切れを防止 */
       #chart, .grid {
-        width: 100% !important;
+        width: calc(100% - 2px) !important;
         min-width: 0 !important;
         max-width: 100% !important;
-        /* 4列のグリッド幅を一律「等分割（25%ずつ）」に強制変更 */
+        margin: 0 auto !important;
         grid-template-columns: repeat(4, 25%) !important; 
-        grid-auto-rows: minmax(70px, auto) !important; /* 高さもスマホ用にコンパクト化 */
-        gap: 2px !important; /* 宮と宮の間隔を詰めて外出しを防ぐ */
+        grid-auto-rows: minmax(70px, auto) !important;
+        gap: 0 !important; /* 隙間によるバグを防ぐため0に、境界線はマスのborderで維持 */
         box-sizing: border-box !important;
       }
 
-      /* 🚨 【重要】各宮（マス）のサイズ制限もすべて解除し、文字を自動縮小 */
       #chart > div, .palace {
         width: 100% !important;
         min-width: 0 !important;
         max-width: 100% !important;
         height: auto !important;
         min-height: 0 !important;
-        padding: 4px !important; /* 余白を狭くして文字が入るスペースを確保 */
-        font-size: 11px !important; /* 👈 文字サイズを小さくして、はみ出しによる枠の崩れを防止 */
+        padding: 4px !important;
+        font-size: 11px !important;
         box-sizing: border-box !important;
       }
 
-      /* 星の文字や宮の名前など、内側のテキストもすべて一回り縮小 */
       #chart * {
         font-size: 10px !important;
         line-height: 1.2 !important;
@@ -146,32 +144,68 @@
     }
 
     /* -----------------------------------------
-       🖨 印刷専用のレイアウト
+       🖨 印刷専用の完璧なレイアウト（スマホ印刷バグ修正）
        ----------------------------------------- */
     @media print {
+      /* スマホ用の画面表示設定をすべて強制リセットして印刷標準に戻す */
+      html, body, .app-layout, .main-content {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        position: static !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* 不要な要素を非表示 */
       .no-print, button, #sidebar {
         display: none !important;
       }
-      .app-layout, .main-content {
+
+      /* 命盤コンテナの印刷最適化 */
+      #chart-container {
         display: block !important;
         width: 100% !important;
-      }
-      #chart-container {
+        page-break-inside: avoid !important; /* 命盤が途中で分裂するのを防止 */
+        page-break-after: always !important; /* 👈 命盤の後で【絶対に改ページ】して2ページ目へ送る */
         text-align: center !important;
+        margin-bottom: 0 !important;
       }
+
+      /* 印刷時の命盤の幅を100%に復元（罫線も綺麗に出るように設定） */
       #chart {
         width: 100% !important;
         min-width: 0 !important;
+        max-width: 100% !important;
         margin: 0 auto !important;
+        grid-template-columns: repeat(4, 25%) !important; /* 印刷時も均等4分割 */
+        display: grid !important;
       }
+
       #chart * {
         text-align: center !important;
+        font-size: 12pt !important; /* 印刷用に文字サイズを最適化 */
       }
+
+      /* 💡 鑑定書エリア：命盤との重なりを完全に回避し、2ページ目の先頭から配置 */
+      #reading-container {
+        display: block !important;
+        width: 100% !important;
+        page-break-before: always !important; /* 👈 鑑定書の手前で【絶対に改ページ】 */
+        margin-top: 0 !important;
+        position: static !important;
+      }
+
       .print-only-text {
         display: block !important;
+        width: 100% !important;
         white-space: pre-wrap !important;
         text-align: left !important;
+        font-size: 12pt !important;
+        line-height: 1.6 !important;
       }
+
       textarea {
         display: none !important;
       }
@@ -240,7 +274,7 @@
         <div id="chart" class="grid"></div>
       </div>
       
-      <div id="reading-container" class="page-break">
+      <div id="reading-container">
         <h3>鑑定書・特記事項</h3>
         <textarea id="reading-text" rows="15"></textarea>
         <div id="print-reading-text" class="print-only-text"></div>
