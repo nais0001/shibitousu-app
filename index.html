@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>紫微斗数 命盤作成アプリ</title>
   <style>
     /* -----------------------------------------
@@ -10,13 +10,12 @@
        ----------------------------------------- */
     .app-layout {
       display: flex;
-      flex-direction: row-reverse; /* 👈 HTML上の順序が【入力➔命盤】になったので、PCでは左右反転させて右側にパネルを配置 */
+      flex-direction: row-reverse;
       width: 100%;
       min-height: 100vh;
       box-sizing: border-box;
     }
 
-    /* メインコンテンツ（命盤・鑑定書） */
     .main-content {
       flex: 1;
       padding: 20px;
@@ -24,14 +23,13 @@
       min-width: 0;
     }
 
-    /* データ入力サイドバー */
     #sidebar {
       width: 320px;
       min-width: 320px;
       background-color: #f5f5f5;
       padding: 20px;
       box-sizing: border-box;
-      border-right: 1px solid #ddd; /* PCでは左側に来るため右線に変更 */
+      border-right: 1px solid #ddd;
     }
 
     .form-group {
@@ -61,31 +59,54 @@
     }
 
     /* -----------------------------------------
-       📱 スマホ向けの画面表示レイアウト（縦並び）
+       📱 スマホ向けの画面表示レイアウト（強制スクロール解放）
        ----------------------------------------- */
     @media screen and (max-width: 768px) {
-      .app-layout {
-        display: flex;
-        flex-direction: column; /* スマホでは標準の上から下への流れにする */
+      /* 🚨 画面をロックしている可能性のある上位要素をすべて強制解除 */
+      html, body {
+        position: static !important;
+        overflow: auto !important;
+        overflow-y: scroll !important; /* 縦スクロールバーを絶対に強制出現させる */
+        height: auto !important;
+        min-height: 100% !important;
       }
 
+      .app-layout {
+        display: block !important; /* flexによる固定を解除し、純粋な縦並びにする */
+        width: 100% !important;
+        height: auto !important;
+        position: static !important;
+        overflow: visible !important;
+      }
+
+      /* 入力パネルの前面フリーズ・固定化を徹底的に破壊 */
       #sidebar {
-        width: 100%;
-        min-width: 100%;
+        display: block !important;
+        position: static !important; /* 👈 fixed や absolute で前面固定されていた場合、これを通常位置に強制送還 */
+        width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important; /* 100vh などの画面ぴったり固定を解除 */
         border-right: none;
         border-bottom: 1px solid #ddd;
         padding: 20px 10px;
         box-sizing: border-box;
+        transform: none !important;
+        overflow: visible !important;
       }
 
+      /* 命盤・鑑定書エリア */
       .main-content {
-        width: 100%;
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        position: static !important;
         padding: 10px;
+        overflow: visible !important;
       }
 
       #chart-container {
         width: 100%;
-        overflow-x: auto;
+        overflow-x: auto !important; /* 命盤の横スクロールだけは維持 */
         margin-bottom: 20px;
       }
       
@@ -190,7 +211,7 @@
       </select>
     </div>
 
-    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="setTimeout(() => document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth' }), 150)">命盤を作成する</button>
+    <button id="btn-submit" style="margin-bottom: 10px; width: 100%;" onclick="setTimeout(() => { document.getElementById('chart-container').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200)">命盤を作成する</button>
     <button id="btn-print" style="width: 100%; background-color: #4CAF50; color: white;">命盤と鑑定内容を印刷</button>
   </div>
 
