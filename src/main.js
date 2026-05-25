@@ -647,3 +647,4 @@ window.addEventListener("DOMContentLoaded", () => {
     printBtn.addEventListener("click", printChartAndReading);
   }
 });
+
