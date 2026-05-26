@@ -147,12 +147,14 @@
         background: rgba(255, 255, 255, 0.8);
       }
 
-      /* 💡 命盤本体：初期値は JS 側で動的計算するため、CSS 側の固定 scale/margin は全撤去 */
+      /* 💡 命盤本体：配置の暴れを防ぐため基準を左上に完全固定 */
       #chart {
-        width: 600px;
-        margin: 0 auto;
-        display: grid;
-        transform-origin: center center; /* 拡大縮小の軸を中央へ */
+        width: 600px !important;
+        min-width: 600px !important;
+        margin: 0 !important; /* 競合を防ぐためマージンをゼロに */
+        position: relative !important;
+        display: grid !important;
+        transform-origin: 0 0 !important; /* 起点を左上(0 0)に完全強制 */
         will-change: transform;
       }
 
@@ -383,7 +385,7 @@
     }, 250);
   }
 
-  /* 印刷：transform をリセットしてから印刷し、終了後に戻す */
+  /* 💡 印刷関数を修正：ビューア側の変数を壊さないように調整 */
   function printChart() {
     const ta  = document.getElementById('reading-text');
     const div = document.getElementById('print-reading-text');
@@ -400,8 +402,8 @@
     chart.style.transform = saved;
   }
 
-/* =====================================================
-     💡 【決定版】スマホ専用 命盤マルチタッチビューア制御（左上起点・中央補正版）
+  /* =====================================================
+     💡 【最終解決版】スマホ専用 命盤マルチタッチビューア制御
   ===================================================== */
   (function() {
     const container = document.getElementById('chart-container');
@@ -415,10 +417,11 @@
     let startX = 0, startY = 0;
     let startTouchDistance = 0;
 
-    // 1. 画面幅に合わせて初期の全体表示位置（中央）を計算する関数
+    // 1. 画面幅に合わせて初期の全体表示位置（中央）を「強制計算」する関数
     function initChartView() {
       if (window.innerWidth > 768) {
         chart.style.transform = 'none';
+        chart.style.left = 'auto';
         container.style.height = 'auto';
         return;
       }
@@ -427,20 +430,24 @@
       baseScale = containerWidth / 600; 
       scale = baseScale;
 
-      // 💡 左上起点（top left）で縮小した際、コンテナの真ん中に持ってくるための初期座標
-      // コンテナ自体の flex (justify-content: center) と干渉しないよう位置をジャストフィットさせます
+      // 💡 命盤の左上起点を、コンテナの真ん中に持ってくるための初期座標の絶対補正
+      // 縮小によって生じる左右の隙間を完全に均等にします
       panX = 0; 
       panY = 0;
 
-      // コンテナの高さも、縮小された命盤の高さに自動フィット
-      container.style.height = (600 * scale) + 20 + 'px'; 
+      // 起点が左上(0 0)のときに中央揃えにするため、要素の左端配置をCSSで強制指定
+      chart.style.position = 'absolute';
+      chart.style.left = '0px';
+      chart.style.top = '0px';
+
+      // コンテナ（覗き窓）の高さも、縮小された命盤の高さに自動ジャストフィット
+      container.style.height = (600 * scale) + 'px'; 
       applyTransform();
     }
 
-    // 2. CSS への反映（起点が左上のため、translate の挙動が正確になります）
+    // 2. CSS への反映（scale を先に適用し、位置ズレを完全に排除）
     function applyTransform() {
       if (window.innerWidth <= 768) {
-        // スケールさせてから、ドラッグ分の座標（panX, panY）を動かします
         chart.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
       }
     }
@@ -451,7 +458,6 @@
       
       if (e.touches.length === 1) {
         isDragging = true;
-        // スケールを考慮したドラッグ移動量の計算
         startX = e.touches[0].clientX / scale - panX;
         startY = e.touches[0].clientY / scale - panY;
       } else if (e.touches.length === 2) {
@@ -467,19 +473,16 @@
       if (window.innerWidth > 768) return;
 
       if (e.touches.length === 1 && isDragging) {
-        // 移動処理（指の動きに合わせて滑らかに追従）
         panX = e.touches[0].clientX / scale - startX;
         panY = e.touches[0].clientY / scale - startY;
         applyTransform();
       } else if (e.touches.length === 2) {
-        // 拡大縮小処理
         const currentDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
         if (startTouchDistance > 0) {
           const factor = currentDistance / startTouchDistance;
-          // 全体表示サイズから最大3倍まで拡大可能
           scale = Math.min(Math.max(baseScale * 0.9, scale * (1 + (factor - 1) * 0.3)), baseScale * 3);
           applyTransform();
         }
@@ -491,19 +494,20 @@
       isDragging = false;
       startTouchDistance = 0;
 
-      // 💡 指を離したとき、初期の全体表示サイズ以下なら真ん中にスナップバック（復帰）
+      // 指を離したとき、初期全体サイズ以下なら中央へ自動復帰
       if (scale <= baseScale * 1.02) {
         scale = baseScale;
         panX = 0;
         panY = 0;
-        chart.style.transition = 'transform 0.25s ease-out';
+        chart.style.transition = 'transform 0.2s ease-out';
         applyTransform();
-        setTimeout(() => { chart.style.transition = 'none'; }, 260);
+        setTimeout(() => { chart.style.transition = 'none'; }, 210);
       }
     });
 
     window.addEventListener('resize', initChartView);
     
+    // 命盤生成の完了タイミング、および初期ロードで確実に中央配置
     const observer = new MutationObserver(function(mutations, obs) {
       if (document.getElementById('chart').children.length > 0) {
         initChartView();
@@ -511,9 +515,11 @@
       }
     });
     observer.observe(chart, { childList: true });
-    setTimeout(initChartView, 400);
+    
+    // 描画遅延に対応するための定期実行保証
+    setTimeout(initChartView, 300);
+    setTimeout(initChartView, 800);
   })();
-  
 </script>
 
 <script type="module" src="/src/main.js"></script>
