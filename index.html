@@ -125,10 +125,20 @@
         width: 100%;
       }
 
+      /* style.css の height:100vh / overflow-y:auto をスマホ用に上書き */
+      .app-layout {
+        height: auto !important;
+        min-height: 100vh;
+      }
+      .main-content {
+        overflow-y: visible !important;
+        height: auto !important;
+      }
+
       /* ── 命盤コンテナ ── */
       #chart-container {
         width: 100%;
-        /* overflow は JS が hidden をセットする */
+        overflow: hidden; /* 拡大時のはみ出しを隠す */
         position: relative;
         touch-action: none;
         background: #fafafa;
@@ -353,6 +363,8 @@ function closeSidebarAndScroll() {
 
 /* ================================================================
    印刷
+   main.js の beforeprint が gridElement.style.height を消すが、
+   それより先に transform:none にして印刷後に復元する。
 ================================================================ */
 function printChart() {
   const ta  = document.getElementById('reading-text');
@@ -361,11 +373,23 @@ function printChart() {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/\n/g,'<br>');
 
-  const chart = document.getElementById('chart');
-  const saved = chart.style.transform;
+  const chart   = document.getElementById('chart');
+  const savedTf = chart.style.transform;
+  const savedH  = chart.style.height;
+  // コンテナ高さも印刷用にリセット
+  const container = document.getElementById('chart-container');
+  const savedCH = container.style.height;
+
   chart.style.transform = 'none';
+  chart.style.height    = '';
+  container.style.height = '';
+
   window.print();
-  chart.style.transform = saved;
+
+  // 印刷ダイアログを閉じた後に元の状態を復元
+  chart.style.transform  = savedTf;
+  chart.style.height     = savedH;
+  container.style.height = savedCH;
 }
 
 /* ================================================================
@@ -429,35 +453,42 @@ function printChart() {
   const container = document.getElementById('chart-container');
   const chart     = document.getElementById('chart');
 
-  const NATURAL_W = 600;   // #chart の元の幅 px
   const MAX_SCALE = 5.0;
-  const SNAP      = 0.15;  // initS の 15% 以内まで縮んだらスナップ
+  const SNAP      = 0.15;
 
-  let S    = 1;
-  let panX = 0;
-  let panY = 0;
-  let initS = 1;
-  let fitted = false; // 一度でも全体表示が完了したか
+  let S        = 1;
+  let panX     = 0;
+  let panY     = 0;
+  let initS    = 1;
+  let fitted   = false;
+  let NATURAL_W = 0; // 命盤の実際の幅（生成後に実測）
 
-  // transform-origin を 0 0 に固定（CSS でも指定済みだが念のため）
+  // transform-origin を 0 0 に固定
   chart.style.transformOrigin = '0 0';
 
   /* ----------------------------------------------------------------
-     コンテナ幅を確実に取得するためにオーバーフローを hidden にする
-     （スクロールバーや padding によるズレを防ぐ）
-  ---------------------------------------------------------------- */
-  container.style.overflow = 'hidden';
-
-  /* ----------------------------------------------------------------
-     初期スケール計算
-     containerW ÷ NATURAL_W = 画面に命盤全体が収まるスケール
+     コンテナ幅の取得
+     style.css が .main-content に overflow-y:auto を設定しているため
+     getBoundingClientRect() で実幅を取るのが最も正確。
   ---------------------------------------------------------------- */
   function getContainerW() {
-    // offsetWidth はスクロールバーを含まない実幅
-    return container.offsetWidth || window.innerWidth;
+    return container.getBoundingClientRect().width || window.innerWidth;
+  }
+
+  /* ----------------------------------------------------------------
+     命盤の自然幅を実測する
+     （style.css の .grid は repeat(4,1fr) で幅が可変のため固定値は使えない）
+  ---------------------------------------------------------------- */
+  function measureNaturalW() {
+    const saved = chart.style.transform;
+    chart.style.transform = 'none';
+    const w = chart.offsetWidth;
+    chart.style.transform = saved;
+    return w > 0 ? w : 0;
   }
 
   function calcInitS() {
+    if (!NATURAL_W) return 1;
     return getContainerW() / NATURAL_W;
   }
 
@@ -482,14 +513,19 @@ function printChart() {
 
   /* ----------------------------------------------------------------
      全体表示にリセット
-     transform-origin:0 0 + panX=0 で、
-     スケール後の幅 = NATURAL_W × initS = containerW となり全幅に収まる。
+     NATURAL_W を実測してから initS を計算し、
+     panX=0, panY=0 で左端から全幅に収まる。
   ---------------------------------------------------------------- */
   function resetToFit(animate) {
-    initS = calcInitS();
-    S     = initS;
-    panX  = 0;
-    panY  = 0;
+    // 命盤幅を実測（transform を外した状態で）
+    const measured = measureNaturalW();
+    if (measured > 0) NATURAL_W = measured;
+    if (!NATURAL_W) return; // まだ命盤が生成されていない
+
+    initS  = calcInitS();
+    S      = initS;
+    panX   = 0;
+    panY   = 0;
     fitted = true;
 
     if (animate) {
@@ -505,34 +541,38 @@ function printChart() {
 
   /* ----------------------------------------------------------------
      初期化
-     main.js が命盤を動的生成した直後に呼ばれるよう
-     MutationObserver (subtree:true) で子孫の変化も監視する。
-     命盤セルが追加された瞬間に offsetHeight > 0 になるので
-     そのタイミングで resetToFit を呼ぶ。
+     main.js は appendChild で宮を動的追加するので
+     MutationObserver(subtree:true) で確実に捕まえる。
+     lastChildCount で「全12宮+中宮=13要素」追加完了を待つ。
   ---------------------------------------------------------------- */
+  let lastChildCount = 0;
+
   function tryInit() {
-    if (chart.offsetHeight > 0 && !fitted) {
-      resetToFit(false);
+    const count = chart.children.length;
+    // 子要素が増えた & 命盤の高さがある & まだフィットしていない
+    if (count > 0 && count !== lastChildCount) {
+      lastChildCount = count;
+      // 描画反映を待ってから実測・リセット
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!fitted) resetToFit(false);
+        });
+      });
     }
   }
 
-  // ページロード済みなら即実行、そうでなければ load 後に実行
   if (document.readyState === 'complete') {
     tryInit();
   } else {
     window.addEventListener('load', tryInit);
   }
 
-  // 命盤が動的生成されたとき（main.js が innerHTML や appendChild するとき）
-  new MutationObserver(() => {
-    if (!fitted) tryInit();
-    // 生成後に高さが変わった場合の追従
-    if (fitted) updateHeight();
-  }).observe(chart, { childList: true, subtree: true });
+  new MutationObserver(tryInit)
+    .observe(chart, { childList: true, subtree: false });
 
   window.addEventListener('resize', () => {
     if (window.innerWidth <= 768) {
-      fitted = false; // リサイズ後は再フィット
+      fitted = false;
       resetToFit(false);
     }
   });
