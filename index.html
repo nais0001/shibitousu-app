@@ -156,13 +156,19 @@
         #chart は JS が transform-origin:0 0 + translate/scale で制御する。
         CSS では幅だけ固定し、それ以外の変形は JS に完全に委ねる。
       */
+      /*
+        #chart の幅を 100vw に固定する。
+        これにより「命盤の元の幅 = 画面幅」となり、
+        initScale = 1.0 で画面ぴったり全体表示になる。
+        JS の NATURAL_W = window.innerWidth で計算と一致させる。
+      */
       #chart {
         display: grid;
-        width: 600px;
+        width: 100vw;        /* ← スマホ画面幅に固定 */
         margin: 0;
         touch-action: none;
         will-change: transform;
-        transform-origin: 0 0; /* JS でも設定するが CSS にも書いておく */
+        transform-origin: 0 0;
       }
 
       /* 星の名前：左寄せ */
@@ -424,27 +430,15 @@ function printChart() {
 /* ================================================================
    命盤 ピンチズーム & ドラッグ（スマホ専用）
 
-   【座標系】
-     transform-origin: 0 0 固定。
-     適用する変換: translate(panX px, panY px) scale(S)
-     → スクリーン上の座標 = コンテンツ座標 × S + pan
-
-   【全体表示の panX 計算】
-     スケール後の命盤幅 = NATURAL_W × initS = コンテナ幅
-     なので NATURAL_W × initS = containerW
-     → initS = containerW / NATURAL_W
-     中央揃えにするには:
-       panX_fit = (containerW - NATURAL_W × initS) / 2 = 0
-     …実は initS の定義から自動的に 0 になる。
-     ただし #chart の CSS width が 600px でも、
-     コンテナに padding があったり scrollbar があると
-     container.clientWidth < 600 となり左端が揃わない。
-     → panX_fit = 0 を使いつつ、
-       コンテナに overflow:hidden を付けて幅を確定させる。
-
-   【スナップ判定】
-     ピンチ終了時 S <= initS × (1+SNAP) なら全体表示に戻す。
-     それ以外はそのまま保持。
+   設計方針：
+   ・#chart の CSS width = 100vw（= window.innerWidth）に固定。
+     これにより NATURAL_W = window.innerWidth が常に正確。
+     initS = 1.0 で画面ぴったりの全体表示になる。
+   ・transform-origin: 0 0 固定。
+     transform = translate(panX, panY) scale(S)
+   ・スクリーン座標 = コンテンツ座標 × S + pan
+   ・ピンチ終了時 S が initS に近ければ全体表示にスナップ。
+     それ以外は panX/panY/S を維持（拡大状態を保持）。
 ================================================================ */
 (function initPinchZoom() {
 
@@ -454,126 +448,78 @@ function printChart() {
   const chart     = document.getElementById('chart');
 
   const MAX_SCALE = 5.0;
-  const SNAP      = 0.15;
+  const SNAP      = 0.18; // initS の 18% 以内まで縮んだらスナップ
 
-  let S        = 1;
-  let panX     = 0;
-  let panY     = 0;
-  let initS    = 1;
-  let fitted   = false;
-  let NATURAL_W = 0; // 命盤の実際の幅（生成後に実測）
+  // #chart width = 100vw なので NATURAL_W = 画面幅
+  // initS = 1.0 で全体表示
+  let NATURAL_W = window.innerWidth;
+  let initS = 1.0;
+  let S     = 1.0;
+  let panX  = 0;
+  let panY  = 0;
 
-  // transform-origin を 0 0 に固定
   chart.style.transformOrigin = '0 0';
 
-  /* ----------------------------------------------------------------
-     コンテナ幅の取得
-     style.css が .main-content に overflow-y:auto を設定しているため
-     getBoundingClientRect() で実幅を取るのが最も正確。
-  ---------------------------------------------------------------- */
-  function getContainerW() {
-    return container.getBoundingClientRect().width || window.innerWidth;
-  }
-
-  /* ----------------------------------------------------------------
-     命盤の自然幅を実測する
-     （style.css の .grid は repeat(4,1fr) で幅が可変のため固定値は使えない）
-  ---------------------------------------------------------------- */
-  function measureNaturalW() {
-    const saved = chart.style.transform;
-    chart.style.transform = 'none';
-    const w = chart.offsetWidth;
-    chart.style.transform = saved;
-    return w > 0 ? w : 0;
-  }
-
-  function calcInitS() {
-    if (!NATURAL_W) return 1;
-    return getContainerW() / NATURAL_W;
-  }
-
-  /* ----------------------------------------------------------------
-     transform 適用
-  ---------------------------------------------------------------- */
+  /* ---- transform 適用 ---- */
   function apply() {
     chart.style.transform = `translate(${panX}px,${panY}px) scale(${S})`;
   }
 
-  /* ----------------------------------------------------------------
-     コンテナ高さを「表示後の命盤の高さ + h1」に合わせる
-     → 鑑定エリアがズレなくなる
-  ---------------------------------------------------------------- */
+  /* ---- コンテナ高さを表示高さに合わせる ---- */
   function updateHeight() {
-    const h1 = container.querySelector('h1');
-    const h1H = h1 ? h1.offsetHeight + parseInt(getComputedStyle(h1).marginTop) : 0;
-    // chart.offsetHeight は transform 前の高さ（CSS の width:600px に対応した高さ）
-    const scaledH = chart.offsetHeight * S;
+    const h1  = container.querySelector('h1');
+    const h1H = h1 ? h1.getBoundingClientRect().height : 0;
+    // chart の自然な高さ × S = 表示高さ
+    const scaledH = chart.scrollHeight * S;
     container.style.height = Math.ceil(h1H + scaledH + 8) + 'px';
   }
 
-  /* ----------------------------------------------------------------
-     全体表示にリセット
-     NATURAL_W を実測してから initS を計算し、
-     panX=0, panY=0 で左端から全幅に収まる。
-  ---------------------------------------------------------------- */
+  /* ---- 全体表示にリセット ---- */
   function resetToFit(animate) {
-    // 命盤幅を実測（transform を外した状態で）
-    const measured = measureNaturalW();
-    if (measured > 0) NATURAL_W = measured;
-    if (!NATURAL_W) return; // まだ命盤が生成されていない
-
-    initS  = calcInitS();
-    S      = initS;
-    panX   = 0;
-    panY   = 0;
-    fitted = true;
+    NATURAL_W = window.innerWidth;
+    initS = 1.0; // width:100vw なので scale=1 が全体表示
+    S     = initS;
+    panX  = 0;
+    panY  = 0;
 
     if (animate) {
       chart.style.transition = 'transform 0.22s ease';
       apply();
       updateHeight();
-      setTimeout(() => { chart.style.transition = ''; }, 250);
+      setTimeout(() => { chart.style.transition = ''; }, 260);
     } else {
       apply();
       updateHeight();
     }
   }
 
-  /* ----------------------------------------------------------------
-     初期化
-     main.js は appendChild で宮を動的追加するので
-     MutationObserver(subtree:true) で確実に捕まえる。
-     lastChildCount で「全12宮+中宮=13要素」追加完了を待つ。
-  ---------------------------------------------------------------- */
-  let lastChildCount = 0;
+  /* ---- 命盤生成後に全体表示（13子要素 = 12宮+中宮 で完成） ---- */
+  let applied = false;
 
-  function tryInit() {
-    const count = chart.children.length;
-    // 子要素が増えた & 命盤の高さがある & まだフィットしていない
-    if (count > 0 && count !== lastChildCount) {
-      lastChildCount = count;
-      // 描画反映を待ってから実測・リセット
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (!fitted) resetToFit(false);
-        });
-      });
+  function onChartMutated() {
+    if (applied) {
+      updateHeight(); // 高さだけ追従
+      return;
+    }
+    // 宮が1つ以上追加されたらフィット（全部揃うまで待たなくてよい）
+    if (chart.children.length > 0) {
+      // rAF×2でブラウザのレイアウト計算完了を待つ
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        resetToFit(false);
+        applied = true;
+      }));
     }
   }
 
-  if (document.readyState === 'complete') {
-    tryInit();
-  } else {
-    window.addEventListener('load', tryInit);
-  }
+  new MutationObserver(onChartMutated)
+    .observe(chart, { childList: true });
 
-  new MutationObserver(tryInit)
-    .observe(chart, { childList: true, subtree: false });
-
+  // リサイズ時に再フィット
   window.addEventListener('resize', () => {
     if (window.innerWidth <= 768) {
-      fitted = false;
+      applied = false;
       resetToFit(false);
+      applied = true;
     }
   });
 
@@ -581,90 +527,61 @@ function printChart() {
      タッチイベント
   ================================================================ */
 
-  function dist(t) {
+  function dist2(t) {
     const dx = t[0].clientX - t[1].clientX;
     const dy = t[0].clientY - t[1].clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  // クライアント座標 → コンテンツ座標（transform 前の #chart 内の座標）
-  function toContent(clientX, clientY) {
+  // クライアント座標 → コンテンツ座標
+  function toContent(cx, cy) {
     const r = container.getBoundingClientRect();
-    // コンテナ左上基準のスクリーン座標 → コンテンツ座標
     return {
-      x: (clientX - r.left - panX) / S,
-      y: (clientY - r.top  - panY) / S
+      x: (cx - r.left - panX) / S,
+      y: (cy - r.top  - panY) / S
     };
   }
 
-  // ピンチ状態
   let pinching = false;
-  let pDist0   = 0;
-  let pS0      = 1, pPanX0 = 0, pPanY0 = 0;
-  let pMidCX   = 0, pMidCY = 0; // コンテンツ座標でのピンチ中心
+  let pDist0 = 0, pS0 = 1, pPanX0 = 0, pPanY0 = 0;
+  let pMidCX = 0, pMidCY = 0;
 
-  // ドラッグ状態
-  let dragging   = false;
-  let dCX0       = 0, dCY0 = 0;
-  let dPanX0     = 0, dPanY0 = 0;
+  let dragging = false;
+  let dCX0 = 0, dCY0 = 0, dPanX0 = 0, dPanY0 = 0;
 
-  // ダブルタップ
-  let lastTapTime = 0;
+  let lastTap = 0;
 
   container.addEventListener('touchstart', (e) => {
     if (e.touches.length >= 2) {
       e.preventDefault();
       pinching = true;
       dragging = false;
-
-      pDist0 = dist(e.touches);
-      pS0    = S;
-      pPanX0 = panX;
-      pPanY0 = panY;
-
-      // ピンチ開始時の中点をコンテンツ座標で記録
-      const midCX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const midCY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const mc = toContent(midCX, midCY);
-      pMidCX = mc.x;
-      pMidCY = mc.y;
-
+      pDist0 = dist2(e.touches);
+      pS0 = S; pPanX0 = panX; pPanY0 = panY;
+      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const mc = toContent(mx, my);
+      pMidCX = mc.x; pMidCY = mc.y;
     } else if (e.touches.length === 1 && !pinching) {
       dragging = true;
-      dCX0     = e.touches[0].clientX;
-      dCY0     = e.touches[0].clientY;
-      dPanX0   = panX;
-      dPanY0   = panY;
+      dCX0 = e.touches[0].clientX; dCY0 = e.touches[0].clientY;
+      dPanX0 = panX; dPanY0 = panY;
     }
   }, { passive: false });
 
   container.addEventListener('touchmove', (e) => {
     if (pinching && e.touches.length >= 2) {
       e.preventDefault();
-
-      const d    = dist(e.touches);
+      const d    = dist2(e.touches);
       const newS = Math.min(MAX_SCALE, Math.max(initS * 0.5, pS0 * (d / pDist0)));
-
-      /*
-        ピンチ中点（コンテンツ座標 pMidCX, pMidCY）が
-        スクリーン上で動かないように panX/panY を決める。
-
-        スクリーン上の位置 = コンテンツ座標 × S + pan
-        ピンチ開始時のスクリーン上の中点:
-          midScreenX = pMidCX × pS0 + pPanX0  （変化しない）
-        スケール変更後も同じ位置にしたいので:
-          midScreenX = pMidCX × newS + panX_new
-          → panX_new = midScreenX - pMidCX × newS
-      */
-      const midSX = pMidCX * pS0 + pPanX0;
-      const midSY = pMidCY * pS0 + pPanY0;
-      panX = midSX - pMidCX * newS;
-      panY = midSY - pMidCY * newS;
+      // ピンチ中点を固定したまま pan を更新
+      const msx = pMidCX * pS0 + pPanX0;
+      const msy = pMidCY * pS0 + pPanY0;
+      panX = msx - pMidCX * newS;
+      panY = msy - pMidCY * newS;
       S    = newS;
-
       apply();
       updateHeight();
-
     } else if (dragging && e.touches.length === 1) {
       e.preventDefault();
       panX = dPanX0 + (e.touches[0].clientX - dCX0);
@@ -674,33 +591,23 @@ function printChart() {
   }, { passive: false });
 
   container.addEventListener('touchend', (e) => {
-
-    // ピンチ終了
     if (pinching && e.touches.length < 2) {
       pinching = false;
-      // initS に近いスケールまで縮んでいたら全体表示にスナップ
       if (S <= initS * (1 + SNAP)) {
-        resetToFit(true);
+        resetToFit(true); // 全体表示にスナップ
       } else {
-        // 拡大状態はそのまま維持
-        updateHeight();
+        updateHeight();   // 拡大状態を維持
       }
     }
-
     if (e.touches.length === 0) {
       dragging = false;
       updateHeight();
     }
-
-    // ダブルタップ検出 → 全体表示に戻す
+    // ダブルタップ → 全体表示
     if (e.changedTouches.length === 1 && !pinching) {
       const now = Date.now();
-      if (now - lastTapTime < 300) {
-        resetToFit(true);
-        lastTapTime = 0; // 連続トリガー防止
-      } else {
-        lastTapTime = now;
-      }
+      if (now - lastTap < 300) { resetToFit(true); lastTap = 0; }
+      else lastTap = now;
     }
   });
 
