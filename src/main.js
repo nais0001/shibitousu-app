@@ -518,34 +518,30 @@ async function renderChart(event) {
         <span class="center-label">格・特記</span>
         <span class="center-value pattern-highlight">${finalPatterns.join(', ')}</span>
       </div>
-　　　<div class="center-info-item" style="position: absolute; bottom: 8px; left: 10px; text-align: left; margin: 0; padding: 0;">
-        <span class="center-value pattern-highlight" style="font-weight: bold; font-size: 12px; color: #333;">${meibanNumberText}</span>
-      </div>
     `;
     root.appendChild(centerDiv);
 
-　　// -------------------------------------------------------------
-    // 【変更】ユーザー指定の3表から「命盤番号（No.とカッコ内番号）」を自動判定するロジックを追加
-    // 関数や主要な処理の流れは変えず、内部でマトリクス計算を行います。
-    // -------------------------------------------------------------
+　　// ==========================================
+    // ①【重要】まず最初に「命盤番号」の計算ロジックをすべて終わらせる
+    // ==========================================
     const mingIdx = branchesOrder.indexOf(mingBranch);
     const ziweiIdx = branchesOrder.indexOf(ziweiBranch);
     
-    // 1. 通し番号（No.）の計算 (001 〜 144)
+    // 通し番号（No.）の計算 (001 〜 144)
     const finalPatternNumber = (ziweiIdx * 12) + mingIdx + 1;
-    const noStr = String(finalPatternNumber).padStart(3, '0'); // 3桁固定にする（例: 025）
+    const noStr = String(finalPatternNumber).padStart(3, '0'); // 3桁固定
 
-    // 2. カッコ内番号の計算（3表の規則性を再現）
+    // カッコ内番号の計算
     let pValue = 0;
     if (ziweiIdx < 6) {
-      // 紫微在子〜巳 (行0〜5)
+      // 紫微在子〜巳
       if (mingIdx < 6) {
         pValue = (mingIdx * 12) + ziweiIdx + 1;
       } else {
         pValue = ((mingIdx - 6) * 12) + ziweiIdx + 7;
       }
     } else {
-      // 紫微在午〜亥 (行6〜11) の直配列マトリクス（提示された表を厳密に再現）
+      // 紫微在午〜亥の直配列マトリクス
       const tableBottom = [
         [73, 85, 97, 109, 121, 133, 79, 91, 103, 115, 127, 139], // 紫微在午
         [74, 86, 98, 110, 122, 134, 80, 92, 104, 116, 128, 140], // 紫微在未
@@ -557,19 +553,22 @@ async function renderChart(event) {
       pValue = tableBottom[ziweiIdx - 6][mingIdx];
     }
 
-    // 指定された「No.：XXX（YYY）」の形式の文字列を作成
+    // 文字列をここで確定させる
     const meibanNumberText = `No.：${noStr}（${pValue}）`;
-    // -------------------------------------------------------------
 
-    // HTML出力部分の修正（作成した文字列をそのまま流し込みます）
+
+    // ==========================================
+    // ②【次に】確定した meibanNumberText を使って HTML を組み立てる
+    // ==========================================
     centerDiv.innerHTML = `
-      <div class="center-info-item" style="position: absolute; bottom: 5px; left: 5px; text-align: left;">
-        <span class="center-value pattern-highlight" style="font-weight: bold; font-size: 11px;">${meibanNumberText}</span>
+      <div class="center-info-item" style="position: absolute; bottom: 8px; left: 10px; text-align: left; margin: 0; padding: 0;">
+        <span class="center-value pattern-highlight" style="font-weight: bold; font-size: 12px; color: #333;">${meibanNumberText}</span>
       </div>
     `;
+    
     root.appendChild(centerDiv);
 
-    // 鑑定内容エリア（表示ロジック）の自動連動。非同期読み込みのため await を付与
+    // 鑑定内容エリアの自動連動
     await updateReadingContent(name || "鑑定ユーザー", finalPatterns, elementalText, finalPatternNumber);
 
   } catch (error) {
