@@ -488,41 +488,8 @@ async function renderChart(event) {
       finalPatterns.push("天乙挟命格");
     }
 
-    // 中宮用 DOM の生成と追加
-    const centerDiv = document.createElement("div");
-    centerDiv.className = "center-palace";
-    centerDiv.innerHTML = `
-      <div class="center-name">${name || "鑑定ユーザー"} 様</div>
-      <div class="center-divider"></div>
-      <div class="center-info-item">
-        <span class="center-label">性別</span>
-        <span class="center-value">${genderJa}</span>
-      </div>
-      <div class="center-info-item">
-        <span class="center-label">新暦生年月日</span>
-        <span class="center-value">${birthDate}</span>
-      </div>
-      <div class="center-info-item">
-        <span class="center-label">旧暦生年月日</span>
-        <span class="center-value">${lunarDateText}</span>
-      </div>
-      <div class="center-info-item">
-        <span class="center-label">誕生時間</span>
-        <span class="center-value">${selectedHourText}</span>
-      </div>
-      <div class="center-info-item">
-        <span class="center-label">五行局</span>
-        <span class="center-value">${elementalText} (${shadowJa})</span>
-      </div>
-      <div class="center-info-item">
-        <span class="center-label">格・特記</span>
-        <span class="center-value pattern-highlight">${finalPatterns.join(', ')}</span>
-      </div>
-    `;
-    root.appendChild(centerDiv);
-
 　　// ==========================================
-    // ①【重要】まず最初に「命盤番号」の計算ロジックをすべて終わらせる
+    // ① まず最初に「命盤番号」のマトリクス計算ロジックを実行
     // ==========================================
     const mingIdx = branchesOrder.indexOf(mingBranch);
     const ziweiIdx = branchesOrder.indexOf(ziweiBranch);
@@ -553,14 +520,45 @@ async function renderChart(event) {
       pValue = tableBottom[ziweiIdx - 6][mingIdx];
     }
 
-    // 文字列をここで確定させる
+    // 文字列を確定
     const meibanNumberText = `No.：${noStr}（${pValue}）`;
 
+    // ==========================================
+    // ② 元の情報に「命盤番号」を添えて DOM の生成と追加
+    // ==========================================
+    const centerDiv = document.createElement("div");
+    centerDiv.className = "center-palace";
+    // 左下絶対配置を効かせるため、親要素の center-palace に relative スタイルを追加
+    centerDiv.style.position = "relative"; 
 
-    // ==========================================
-    // ②【次に】確定した meibanNumberText を使って HTML を組み立てる
-    // ==========================================
     centerDiv.innerHTML = `
+      <div class="center-name">${name || "鑑定ユーザー"} 様</div>
+      <div class="center-divider"></div>
+      <div class="center-info-item">
+        <span class="center-label">性別</span>
+        <span class="center-value">${genderJa}</span>
+      </div>
+      <div class="center-info-item">
+        <span class="center-label">新暦生年月日</span>
+        <span class="center-value">${birthDate}</span>
+      </div>
+      <div class="center-info-item">
+        <span class="center-label">旧暦生年月日</span>
+        <span class="center-value">${lunarDateText}</span>
+      </div>
+      <div class="center-info-item">
+        <span class="center-label">誕生時間</span>
+        <span class="center-value">${selectedHourText}</span>
+      </div>
+      <div class="center-info-item">
+        <span class="center-label">五行局</span>
+        <span class="center-value">${elementalText} (${shadowJa})</span>
+      </div>
+      <div class="center-info-item">
+        <span class="center-label">格・特記</span>
+        <span class="center-value pattern-highlight">${finalPatterns.join(', ')}</span>
+      </div>
+
       <div class="center-info-item" style="position: absolute; bottom: 8px; left: 10px; text-align: left; margin: 0; padding: 0;">
         <span class="center-value pattern-highlight" style="font-weight: bold; font-size: 12px; color: #333;">${meibanNumberText}</span>
       </div>
