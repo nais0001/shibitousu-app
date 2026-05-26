@@ -232,12 +232,13 @@
         background: none !important;
       }
 
+      /* #chart の位置合わせの基準を中央へ固定 */
       #chart {
-        display: grid !important;
-        width: 100% !important;
-        transform: none !important;
-        margin: 0 auto !important;
-        margin-bottom: 0 !important;
+        width: 600px;
+        margin: 0 auto;
+        display: grid;
+        transform-origin: center center; /* 👈 ここが重要です */
+        will-change: transform;
       }
 
       #chart .star,
@@ -396,14 +397,14 @@
     chart.style.transform = saved;
   }
 
-  /* =====================================================
-     💡 【新規追加】スマホ専用 命盤マルチタッチビューア制御
+/* =====================================================
+     💡 【修正版】スマホ専用 命盤マルチタッチビューア制御（中央配置修正）
   ===================================================== */
   (function() {
     const container = document.getElementById('chart-container');
     const chart = document.getElementById('chart');
     
-    // 変数管理（初期スケール、位置、タッチログ）
+    // 変数管理
     let baseScale = 1; 
     let scale = 1;
     let panX = 0;
@@ -412,7 +413,7 @@
     let startX = 0, startY = 0;
     let startTouchDistance = 0;
 
-    // 1. 画面幅に合わせて命盤の初期ジャストフィット倍率を割り出す関数
+    // 1. 画面幅に合わせて命盤の初期ジャストフィット倍率と「中央座標」を計算する関数
     function initChartView() {
       if (window.innerWidth > 768) {
         // PCレイアウト時はスタイルを解除して標準表示
@@ -425,17 +426,22 @@
       const containerWidth = container.clientWidth;
       baseScale = containerWidth / 600; 
       scale = baseScale;
-      panX = 0;
+
+      // 💡 【修正ポイント】transform-origin: center center のズレを相殺し、中央に引き戻す計算
+      // 命盤の本来の幅(600px)が縮小されたことで生まれる余白を計算し、左端配置から中央配置へ補正します
+      panX = 0; 
       panY = 0;
 
-      // 覗き窓（コンテナ）の高さも縮小された命盤の高さ（600px * スケール）にフィットさせる
-      container.style.height = (600 * scale) + 60 + 'px'; // 60pxはタイトル用のバッファ
+      // 覗き窓（コンテナ）の高さも縮小された命盤の高さ（600px * スケール）にジャストフィットさせる
+      // ※見出し等の高さバッファ(60px)を足しています
+      container.style.height = (600 * scale) + 60 + 'px'; 
       applyTransform();
     }
 
     // 2. 変動した座標と倍率を命盤のCSSへ反映する関数
     function applyTransform() {
       if (window.innerWidth <= 768) {
+        // 💡 【修正ポイント】ベースの縮小（scale）がかかった状態の原点位置を中央に維持します
         chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
       }
     }
@@ -445,12 +451,10 @@
       if (window.innerWidth > 768) return;
       
       if (e.touches.length === 1) {
-        // 1本指操作：ドラッグ移動の開始位置を記録
         isDragging = true;
         startX = e.touches[0].clientX - panX;
         startY = e.touches[0].clientY - panY;
       } else if (e.touches.length === 2) {
-        // 2本指操作：ピンチイン・ピンチアウトの開始距離を記録
         isDragging = false;
         startTouchDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
@@ -475,7 +479,6 @@
         );
         if (startTouchDistance > 0) {
           const factor = currentDistance / startTouchDistance;
-          // 急激な拡大を防ぎつつ倍率をなめらかに反映（上限は3倍まで）
           scale = Math.min(Math.max(baseScale * 0.8, scale * (1 + (factor - 1) * 0.3)), baseScale * 3);
           applyTransform();
         }
@@ -487,13 +490,11 @@
       isDragging = false;
       startTouchDistance = 0;
 
-      // 💡 ご要望の「縮小するとまた全体表示に戻る」スナップバック処理
-      // 初期全体表示の倍率よりも小さくなった、または初期倍率に極めて近くなった場合は全体表示位置に強制復帰
+      // 縮小するとまた全体表示（中央）に戻るスナップバック処理
       if (scale <= baseScale * 1.02) {
         scale = baseScale;
         panX = 0;
         panY = 0;
-        // 動きを滑らかにするため一時的にアニメーションを付与
         chart.style.transition = 'transform 0.3s ease-out';
         applyTransform();
         setTimeout(() => { chart.style.transition = 'none'; }, 300);
@@ -502,19 +503,19 @@
 
     // 画面の初期化、およびスマホの画面回転（リサイズ）対策
     window.addEventListener('resize', initChartView);
-    // 組み込み直後の実行を保証するために MutationObserver で命盤のレンダリングを監視
+    
+    // 命盤が裏でレンダリング完了した瞬間をキャッチして中央配置を実行
     const observer = new MutationObserver(function(mutations, obs) {
       if (document.getElementById('chart').children.length > 0) {
         initChartView();
-        obs.disconnect(); // 一度初期化できたら監視終了
+        obs.disconnect();
       }
     });
     observer.observe(chart, { childList: true });
     
-    // 即時適用トライ
+    // 念のための遅延実行保障
     setTimeout(initChartView, 500);
-  })();
-</script>
+  })();</script>
 
 <script type="module" src="/src/main.js"></script>
 </body>
