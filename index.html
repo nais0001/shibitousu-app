@@ -114,7 +114,7 @@
         border-top: 3px solid #4CAF50 !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.25) !important;
         padding: 20px !important;
-        /* 初期状態は画面外（top で制御するので bottom は使わない） */
+        /* 初期状態は画面外 */
         top: -100vh !important;
         transition: top 0.3s ease !important;
       }
@@ -123,11 +123,17 @@
         top: 50px !important;
       }
 
-      /* 命盤エリア */
+      /* 💡 命盤エリア：インタラクティブビューアの覗き窓として再定義 */
       #chart-container {
         width: 100%;
         text-align: center;
-        margin-bottom: 0;
+        margin-bottom: 15px;
+        position: relative;
+        overflow: hidden !important; /* はみ出た命盤を隠してスワイプ移動可能に */
+        background-color: #fcfcfc;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        touch-action: none; /* ブラウザ標準のスクロールを抑制し、ピンチ・スワイプを最優先に */
       }
 
       #chart-container h1 {
@@ -136,15 +142,18 @@
         text-align: center;
         width: 100%;
         display: block;
+        position: relative;
+        z-index: 20; /* 命盤の下に隠れないよう前面へ */
+        background: rgba(255, 255, 255, 0.8);
       }
 
+      /* 💡 命盤本体：初期値は JS 側で動的計算するため、CSS 側の固定 scale/margin は全撤去 */
       #chart {
         width: 600px;
-        transform: scale(0.53);
-        transform-origin: center top;
         margin: 0 auto;
         display: grid;
-        margin-bottom: -250px;
+        transform-origin: center center; /* 拡大縮小の軸を中央へ */
+        will-change: transform;
       }
 
       /* 星の名前：左寄せ */
@@ -173,7 +182,7 @@
       #reading-container {
         width: 100%;
         box-sizing: border-box;
-        margin-top: 0 !important;
+        margin-top: 10px !important;
         position: relative;
         z-index: 10;
       }
@@ -212,12 +221,15 @@
         text-align: center !important;
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
+        background: none !important;
+        border: none !important;
       }
 
       #chart-container h1 {
         text-align: center !important;
         font-size: 24pt !important;
         margin-bottom: 20px !important;
+        background: none !important;
       }
 
       #chart {
@@ -383,6 +395,125 @@
     window.print();
     chart.style.transform = saved;
   }
+
+  /* =====================================================
+     💡 【新規追加】スマホ専用 命盤マルチタッチビューア制御
+  ===================================================== */
+  (function() {
+    const container = document.getElementById('chart-container');
+    const chart = document.getElementById('chart');
+    
+    // 変数管理（初期スケール、位置、タッチログ）
+    let baseScale = 1; 
+    let scale = 1;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startTouchDistance = 0;
+
+    // 1. 画面幅に合わせて命盤の初期ジャストフィット倍率を割り出す関数
+    function initChartView() {
+      if (window.innerWidth > 768) {
+        // PCレイアウト時はスタイルを解除して標準表示
+        chart.style.transform = 'none';
+        container.style.height = 'auto';
+        return;
+      }
+      
+      // コンテナ（スマホ画面幅）と命盤本来の横幅（600px）から比率を計算
+      const containerWidth = container.clientWidth;
+      baseScale = containerWidth / 600; 
+      scale = baseScale;
+      panX = 0;
+      panY = 0;
+
+      // 覗き窓（コンテナ）の高さも縮小された命盤の高さ（600px * スケール）にフィットさせる
+      container.style.height = (600 * scale) + 60 + 'px'; // 60pxはタイトル用のバッファ
+      applyTransform();
+    }
+
+    // 2. 変動した座標と倍率を命盤のCSSへ反映する関数
+    function applyTransform() {
+      if (window.innerWidth <= 768) {
+        chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      }
+    }
+
+    // 3. タッチイベントの割り当て（スマホのみ動作）
+    container.addEventListener('touchstart', function(e) {
+      if (window.innerWidth > 768) return;
+      
+      if (e.touches.length === 1) {
+        // 1本指操作：ドラッグ移動の開始位置を記録
+        isDragging = true;
+        startX = e.touches[0].clientX - panX;
+        startY = e.touches[0].clientY - panY;
+      } else if (e.touches.length === 2) {
+        // 2本指操作：ピンチイン・ピンチアウトの開始距離を記録
+        isDragging = false;
+        startTouchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchmove', function(e) {
+      if (window.innerWidth > 768) return;
+
+      if (e.touches.length === 1 && isDragging) {
+        // 移動処理
+        panX = e.touches[0].clientX - startX;
+        panY = e.touches[0].clientY - startY;
+        applyTransform();
+      } else if (e.touches.length === 2) {
+        // 拡大縮小処理
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        if (startTouchDistance > 0) {
+          const factor = currentDistance / startTouchDistance;
+          // 急激な拡大を防ぎつつ倍率をなめらかに反映（上限は3倍まで）
+          scale = Math.min(Math.max(baseScale * 0.8, scale * (1 + (factor - 1) * 0.3)), baseScale * 3);
+          applyTransform();
+        }
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchend', function(e) {
+      if (window.innerWidth > 768) return;
+      isDragging = false;
+      startTouchDistance = 0;
+
+      // 💡 ご要望の「縮小するとまた全体表示に戻る」スナップバック処理
+      // 初期全体表示の倍率よりも小さくなった、または初期倍率に極めて近くなった場合は全体表示位置に強制復帰
+      if (scale <= baseScale * 1.02) {
+        scale = baseScale;
+        panX = 0;
+        panY = 0;
+        // 動きを滑らかにするため一時的にアニメーションを付与
+        chart.style.transition = 'transform 0.3s ease-out';
+        applyTransform();
+        setTimeout(() => { chart.style.transition = 'none'; }, 300);
+      }
+    });
+
+    // 画面の初期化、およびスマホの画面回転（リサイズ）対策
+    window.addEventListener('resize', initChartView);
+    // 組み込み直後の実行を保証するために MutationObserver で命盤のレンダリングを監視
+    const observer = new MutationObserver(function(mutations, obs) {
+      if (document.getElementById('chart').children.length > 0) {
+        initChartView();
+        obs.disconnect(); // 一度初期化できたら監視終了
+      }
+    });
+    observer.observe(chart, { childList: true });
+    
+    // 即時適用トライ
+    setTimeout(initChartView, 500);
+  })();
 </script>
 
 <script type="module" src="/src/main.js"></script>
