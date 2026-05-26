@@ -5,66 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>紫微斗数 命盤作成アプリ</title>
   <style>
-    /* =====================================================
-       🎨 CSS 変数・ベース
-       ===================================================== */
+    /* ============================================================
+       ベース
+    ============================================================ */
     :root {
-      --color-primary: #4CAF50;
-      --color-primary-dark: #388E3C;
-      --sidebar-width: 320px;
-      --topbar-height: 50px;
+      --green: #4CAF50;
+      --green-dark: #388E3C;
+      --bar-h: 50px;
+      --sidebar-w: 320px;
     }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; padding: 0; font-family: sans-serif; }
+    .print-only-text { display: none; }
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-    }
-
-    /* =====================================================
-       💻 PC レイアウト（横並び）
-       ===================================================== */
+    /* ============================================================
+       PC レイアウト
+    ============================================================ */
     .app-layout {
       display: flex;
       flex-direction: row;
       width: 100%;
       min-height: 100vh;
     }
-
     .main-content {
       flex: 1;
       padding: 20px;
       min-width: 0;
     }
-
     #sidebar {
-      width: var(--sidebar-width);
-      min-width: var(--sidebar-width);
-      background-color: #f5f5f5;
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: #f5f5f5;
       padding: 20px;
       border-left: 1px solid #ddd;
     }
+    .mobile-menu-toggle { display: none; }
 
-    /* モバイル用トグルボタンは PC では非表示 */
-    .mobile-menu-toggle {
-      display: none;
-    }
-
-    /* ---- フォーム共通 ---- */
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
     .form-group input,
     .form-group select,
     #reading-text {
@@ -73,7 +51,6 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-
     button {
       padding: 10px;
       border: none;
@@ -81,115 +58,102 @@
       cursor: pointer;
       font-weight: bold;
     }
+    #chart-container { text-align: center; margin-bottom: 20px; }
+    #reading-container { margin-top: 20px; }
+    #reading-text { width: 100%; }
 
-    /* ---- 命盤コンテナ（PC） ---- */
-    #chart-container {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    /* ---- 鑑定エリア（PC） ---- */
-    #reading-container {
-      margin-top: 20px;
-    }
-
-    #reading-text {
-      width: 100%;
-    }
-
-    /* 印刷専用テキスト：通常時は非表示 */
-    .print-only-text {
-      display: none;
-    }
-
-    /* =====================================================
-       📱 スマホ レイアウト（max-width: 768px）
-       ===================================================== */
+    /* ============================================================
+       スマホ（max-width: 768px）
+    ============================================================ */
     @media screen and (max-width: 768px) {
 
-      /* --- レイアウトをブロック化 --- */
-      .app-layout {
-        display: block;
-      }
+      .app-layout { display: block; }
 
-      .main-content {
-        padding: 0;
-        padding-top: var(--topbar-height); /* 固定トグルバーの分だけ下げる */
-        width: 100%;
-      }
-
-      /* --- 固定トグルボタン --- */
+      /* ── トップバー（条件入力ボタン） ── */
       .mobile-menu-toggle {
         display: flex;
         align-items: center;
         justify-content: center;
         position: fixed;
-        top: 0;
-        left: 0;
+        top: 0; left: 0;
         width: 100%;
-        height: var(--topbar-height);
-        background-color: var(--color-primary);
-        color: white;
+        height: var(--bar-h);
+        background: var(--green);
+        color: #fff;
         font-weight: bold;
         font-size: 15px;
         z-index: 9999;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 5px rgba(0,0,0,.2);
         cursor: pointer;
-        gap: 8px;
         user-select: none;
       }
 
-      /* --- スライドアップ入力パネル --- */
+      /*
+        ── 入力パネル（サイドバー） ──
+        ポイント：
+        ・bottom: -100% で完全に画面外に退避
+        ・active 時は bottom: var(--bar-h) — トップバーの真下にぴったり接する
+        ・top は使わない（bottom のみで制御）
+      */
       #sidebar {
         position: fixed !important;
-        bottom: -100%;
+        bottom: -100% !important;
         left: 0 !important;
+        top: auto !important;
         width: 100% !important;
-        max-height: 75vh !important;
+        max-height: calc(100vh - var(--bar-h)) !important;
         overflow-y: auto !important;
         z-index: 9998;
-        background-color: #ffffff !important;
-        border-left: none;
-        border-top: 3px solid var(--color-primary);
-        box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
-        transition: bottom 0.3s ease-in-out;
-        padding: 20px;
+        background: #fff !important;
+        border-left: none !important;
+        border-top: 3px solid var(--green) !important;
+        box-shadow: 0 -4px 12px rgba(0,0,0,.25) !important;
+        transition: bottom 0.3s ease !important;
+        padding: 20px !important;
       }
-
+      /* active：トップバーの底辺からスタート → 隙間ゼロ */
       #sidebar.active {
-        bottom: 0 !important;
+        bottom: calc(100vh - var(--bar-h) - 100%) !important;
+        /* = 画面高さ - バー高さ - パネル高さ(max 100vh-bar-h) */
+        /* 簡単な書き方は top: var(--bar-h) にするが、
+           bottom でアニメーションしているので top も使う */
       }
 
-      /* --- 命盤コンテナ --- */
+      .main-content {
+        padding: 0;
+        padding-top: var(--bar-h);
+        width: 100%;
+      }
+
+      /* ── 命盤コンテナ ── */
       #chart-container {
         width: 100%;
-        overflow: hidden;           /* ピンチ時にはみ出さないよう隠す */
-        touch-action: none;         /* ブラウザのデフォルトスクロールを抑制してピンチを奪う */
-        cursor: grab;
+        /* overflow: hidden だと拡大時にはみ出た部分が見えないのでvisibleに */
+        overflow: visible;
+        position: relative;
+        touch-action: none;
         background: #fafafa;
         margin-bottom: 0;
-        text-align: center;
       }
-
       #chart-container h1 {
         font-size: 18px;
-        margin: 10px auto 4px;
+        margin: 10px 0 4px;
         text-align: center;
-        pointer-events: none;       /* ドラッグ時にテキスト選択させない */
+        pointer-events: none;
+        user-select: none;
       }
 
       /*
-        #chart はJSで transform(scale + translate) を直接制御する。
-        CSS の固定 scale / margin-bottom は全て削除し、
-        JS 側で初期スケールを計算して設定する。
+        #chart は JS が transform-origin:0 0 + translate/scale で制御する。
+        CSS では幅だけ固定し、それ以外の変形は JS に完全に委ねる。
       */
       #chart {
         display: grid;
-        width: 600px;               /* 元サイズ固定 */
-        /* transform-origin は JS で "0 0" に設定する */
-        will-change: transform;
-        margin: 0;                  /* JS が panX で中央配置を制御 */
+        width: 600px;
+        margin: 0;
         touch-action: none;
+        will-change: transform;
+        transform-origin: 0 0; /* JS でも設定するが CSS にも書いておく */
       }
 
       /* 星の名前：左寄せ */
@@ -201,8 +165,7 @@
         justify-content: flex-start !important;
         padding-left: 6px !important;
       }
-
-      /* 大限・小限 2行維持 */
+      /* 大限・小限 2行 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -214,40 +177,29 @@
         line-height: 1.3 !important;
       }
 
-      /* --- 鑑定エリア：画面幅いっぱい --- */
+      /* ── 鑑定エリア ── */
       #reading-container {
         width: 100%;
-        box-sizing: border-box;
         padding: 12px;
         margin-top: 8px;
         position: relative;
         z-index: 10;
       }
-
-      #reading-container h3 {
-        margin: 0 0 8px;
-        font-size: 16px;
-      }
-
+      #reading-container h3 { margin: 0 0 8px; font-size: 16px; }
       #reading-text {
         width: 100% !important;
-        box-sizing: border-box;
         font-size: 14px;
         line-height: 1.6;
         resize: vertical;
       }
 
-    } /* end @media (max-width: 768px) */
+    } /* end @media mobile */
 
-    /* =====================================================
-       🖨 印刷レイアウト
-       ===================================================== */
+    /* ============================================================
+       印刷
+    ============================================================ */
     @media print {
-
-      /* スマホ用の transform / negative-margin を完全リセット */
-      html, body,
-      .app-layout,
-      .main-content {
+      html, body, .app-layout, .main-content {
         display: block !important;
         width: 100% !important;
         height: auto !important;
@@ -256,84 +208,51 @@
         margin: 0 !important;
         padding: 0 !important;
       }
+      .no-print, button, #sidebar, .mobile-menu-toggle { display: none !important; }
 
-      /* 印刷不要な要素を非表示 */
-      .no-print,
-      button,
-      #sidebar,
-      .mobile-menu-toggle {
-        display: none !important;
-      }
-
-      /* 1ページ目：命盤 */
       #chart-container {
         display: block !important;
         width: 100% !important;
         height: auto !important;
         overflow: visible !important;
         text-align: center !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        margin: 0 !important; padding: 0 !important;
         page-break-inside: avoid !important;
-        page-break-after: always !important; /* 命盤の直後で強制改ページ */
+        page-break-after: always !important;
         touch-action: auto !important;
       }
-
       #chart-container h1 {
         text-align: center !important;
         font-size: 24pt !important;
         margin-bottom: 20px !important;
-        pointer-events: auto !important;
       }
-
-      /* 印刷時は元サイズ・transform なし・余白なしに完全リセット */
       #chart {
         display: grid !important;
         width: 100% !important;
-        transform: none !important;        /* ピンチ状態の transform を打ち消す */
+        transform: none !important;
         transform-origin: unset !important;
         margin: 0 auto !important;
-        touch-action: auto !important;
       }
-
-      /* 印刷時も星名は左寄せ */
-      #chart .star,
-      #chart .main-star,
-      #chart .sub-star,
+      #chart .star, #chart .main-star, #chart .sub-star,
       #chart div[class*="star"] {
         text-align: left !important;
         justify-content: flex-start !important;
         padding-left: 8px !important;
       }
-
-      /* 印刷時も大限・小限 2行 */
-      #chart .daigen,
-      #chart .shogen,
-      #chart .period-text {
+      #chart .daigen, #chart .shogen, #chart .period-text {
         display: block !important;
         white-space: pre-line !important;
       }
-
-      /* 2ページ目：鑑定書 */
       #reading-container {
         display: block !important;
         width: 100% !important;
-        page-break-before: always !important; /* 鑑定書は必ず2ページ目から */
+        page-break-before: always !important;
         margin: 0 !important;
         padding: 30px 0 0 !important;
         position: static !important;
       }
-
-      #reading-container h3 {
-        font-size: 16pt !important;
-        margin-bottom: 15px !important;
-      }
-
-      /* 印刷時は textarea を非表示にして div で代替 */
-      textarea#reading-text {
-        display: none !important;
-      }
-
+      #reading-container h3 { font-size: 16pt !important; margin-bottom: 15px !important; }
+      textarea#reading-text { display: none !important; }
       .print-only-text {
         display: block !important;
         width: 100% !important;
@@ -342,48 +261,34 @@
         font-size: 12pt !important;
         line-height: 1.6 !important;
       }
-
-    } /* end @media print */
-
+    }
   </style>
 </head>
 <body>
 
-<!-- スマホ用トグルボタン（PC では非表示） -->
 <div class="mobile-menu-toggle no-print" id="menu-toggle" onclick="toggleSidebar()">
   👤 条件入力を開く / 閉じる
 </div>
 
 <div class="app-layout">
-
-  <!-- ===== メインコンテンツ ===== -->
   <div class="main-content">
-
-    <!-- 命盤エリア -->
     <div id="chart-container">
       <h1>紫微斗数 命盤</h1>
       <div id="chart" class="grid"></div>
     </div>
-
-    <!-- 鑑定書エリア -->
     <div id="reading-container">
       <h3>鑑定書・特記事項</h3>
       <textarea id="reading-text" rows="15"></textarea>
-      <!-- 印刷時に textarea の代わりに表示するテキスト -->
       <div id="print-reading-text" class="print-only-text"></div>
     </div>
+  </div>
 
-  </div><!-- /.main-content -->
-
-  <!-- ===== サイドバー（入力パネル） ===== -->
   <div id="sidebar" class="no-print">
     <h2>命盤データ入力</h2>
-
     <div class="form-group">
       <label>お名前</label>
       <input type="text" id="user-name" value="鑑定ユーザー">
     </div>
-
     <div class="form-group">
       <label>暦の種類</label>
       <select id="date-type">
@@ -391,12 +296,10 @@
         <option value="lunar">太陰暦 (旧暦)</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>誕生日</label>
       <input type="date" id="birth-date">
     </div>
-
     <div class="form-group">
       <label>出生時間 (時辰)</label>
       <select id="birth-hour">
@@ -414,7 +317,6 @@
         <option value="11">亥時 (21:00 - 22:59)</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>性別</label>
       <select id="user-gender">
@@ -422,290 +324,297 @@
         <option value="female">女</option>
       </select>
     </div>
-
-    <button id="btn-submit"
-            style="margin-bottom:10px; width:100%;"
-            onclick="closeSidebarAndScroll()">
+    <button id="btn-submit" style="margin-bottom:10px;width:100%;" onclick="closeSidebarAndScroll()">
       命盤を作成する
     </button>
-
-    <button id="btn-print"
-            style="width:100%; background-color:#4CAF50; color:white;"
-            onclick="printChart()">
+    <button id="btn-print" style="width:100%;background:#4CAF50;color:#fff;" onclick="printChart()">
       命盤と鑑定内容を印刷
     </button>
-  </div><!-- /#sidebar -->
+  </div>
+</div>
 
-</div><!-- /.app-layout -->
-
-
-<!-- =====================================================
-     JavaScript
-     ===================================================== -->
 <script>
-  /* -------------------------------------------------------
-     サイドバー 開閉
-     ------------------------------------------------------- */
-  function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('active');
+/* ================================================================
+   サイドバー 開閉
+================================================================ */
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('active');
+}
+
+function closeSidebarAndScroll() {
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('active');
   }
+  setTimeout(() => {
+    document.getElementById('chart-container')
+      .scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
 
-  function closeSidebarAndScroll() {
-    if (window.innerWidth <= 768) {
-      document.getElementById('sidebar').classList.remove('active');
-    }
-    setTimeout(() => {
-      document.getElementById('chart-container')
-        .scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 250);
-  }
+/* ================================================================
+   印刷
+================================================================ */
+function printChart() {
+  const ta  = document.getElementById('reading-text');
+  const div = document.getElementById('print-reading-text');
+  div.innerHTML = ta.value
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
 
-  /* -------------------------------------------------------
-     印刷前処理：textarea の内容を div にコピーしてから印刷
-     ------------------------------------------------------- */
-  function printChart() {
-    const ta  = document.getElementById('reading-text');
-    const div = document.getElementById('print-reading-text');
+  const chart = document.getElementById('chart');
+  const saved = chart.style.transform;
+  chart.style.transform = 'none';
+  window.print();
+  chart.style.transform = saved;
+}
 
-    // textarea の内容を印刷用 div に反映（改行を <br> に変換）
-    div.innerHTML = ta.value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\n/g, '<br>');
+/* ================================================================
+   入力パネル — サイドバーの active 制御（隙間ゼロ版）
 
-    // ピンチズームの transform を印刷前にリセット
-    const chart = document.getElementById('chart');
-    const savedTransform = chart.style.transform;
-    chart.style.transform = 'none';
+   方針：
+     CSS の bottom アニメーションではトップバー直下に置くのが
+     難しい（パネル高さが可変のため）ので、
+     JS で開くたびに top: BAR_H を直接セットする。
+     閉じるときは top をリセットして bottom: -100% に戻す。
+================================================================ */
+(function fixSidebarGap() {
+  const BAR_H = 50; // --bar-h と同値
+  const sb    = document.getElementById('sidebar');
 
-    window.print();
-
-    // 印刷ダイアログを閉じたあとに元の transform を復元
-    chart.style.transform = savedTransform;
-  }
-
-  /* -------------------------------------------------------
-     命盤 ピンチ & ドラッグ ズーム（スマホ専用）
-
-     座標系の方針：
-       ・transform-origin は常に「0 0」（左上）固定
-       ・transform = `scale(S) translate(tx, ty)` の順で適用
-         → scale 後に translate するので、tx/ty は「スケール前の座標系」の値
-         → ピンチ中心を固定するには：
-              tx_new = tx_old + midX*(1/newS - 1/oldS)  ではなく
-              スケール前座標系で midX/scale を使う計算が必要
-
-       ・実装は「スクリーン座標系で panX/panY を管理し、
-         scale は別管理」する Map-Viewer 方式を採用
-         transform = `translate(panX px, panY px) scale(S)`
-         ただし transform-origin: 0 0 で適用
-
-       ・手を離した後のスナップ：
-         scale <= initialScale なら全体表示にアニメーションリセット
-         scale > initialScale なら位置固定（移動は保持）
-     ------------------------------------------------------- */
-  (function initChartPinchZoom() {
-
+  // active クラスのオン/オフを監視して top を動的に設定
+  const observer = new MutationObserver(() => {
     if (window.innerWidth > 768) return;
-
-    const container = document.getElementById('chart-container');
-    const chart     = document.getElementById('chart');
-
-    /* ── 定数 ── */
-    const CHART_NATURAL_W = 600; // #chart の元の幅(px)
-    const MAX_SCALE       = 4.0;
-    const SNAP_THRESHOLD  = 0.05; // initialScale との差がこれ以下ならスナップ
-
-    /* ── 状態 ── */
-    let S     = 1;   // 現在のスケール
-    let panX  = 0;   // translateX (スクリーン px)
-    let panY  = 0;   // translateY (スクリーン px)
-    let initS = 1;   // 画面幅ピッタリのスケール（基準値）
-
-    /* ── transform-origin を 0 0 に固定 ── */
-    chart.style.transformOrigin = '0 0';
-
-    /* ── 初期スケール計算 ── */
-    function calcInitS() {
-      const w = container.clientWidth || window.innerWidth;
-      return Math.min(w / CHART_NATURAL_W, 1);
+    if (sb.classList.contains('active')) {
+      // トップバーの真下にぴったり貼り付け
+      sb.style.top    = BAR_H + 'px';
+      sb.style.bottom = 'auto';
+    } else {
+      // 画面外に退避
+      sb.style.top    = '';
+      sb.style.bottom = '-100%';
     }
+  });
+  observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+})();
 
-    /* ── 全体表示（初期状態）に戻す ──
-       アニメーション付き（transition を一時的に付与） */
-    function resetToFit(animated) {
-      if (animated) {
-        chart.style.transition = 'transform 0.25s ease';
-        setTimeout(() => { chart.style.transition = ''; }, 280);
+/* ================================================================
+   命盤 ピンチズーム & ドラッグ（スマホ専用）
+
+   座標系
+   -------
+   transform-origin: 0 0 固定。
+   適用する変換： translate(panX, panY) scale(S)
+   これは「まず S 倍に拡大し、次に panX/panY だけ平行移動」。
+
+   コンテナ内座標 (cx, cy) の、変換後のスクリーン上の位置:
+     screenX = cx * S + panX
+     screenY = cy * S + panY
+
+   ピンチ中心を固定するには：
+     mid_screen = mid_content * S + pan
+   を保ちながら S を変化させるので
+     pan_new = mid_screen - mid_content * S_new
+             = (mid_content * S_old + pan_old) - mid_content * S_new
+
+   スナップ
+   --------
+   ピンチ終了時に S <= initS * (1 + SNAP_MARGIN) なら全体表示に戻す。
+   それ以外は位置・スケールをそのまま保持する。
+================================================================ */
+(function initPinchZoom() {
+
+  if (window.innerWidth > 768) return;
+
+  const container = document.getElementById('chart-container');
+  const chart     = document.getElementById('chart');
+
+  const NATURAL_W   = 600;   // #chart の元の幅 px
+  const MAX_SCALE   = 5.0;
+  const SNAP_MARGIN = 0.12;  // initS のこの割合まで縮小したらスナップ
+
+  let S     = 1;
+  let panX  = 0;
+  let panY  = 0;
+  let initS = 1;
+
+  // transform-origin を必ず 0 0 に固定
+  chart.style.transformOrigin = '0 0';
+
+  /* --- 初期スケール --- */
+  function calcInitS() {
+    return (container.clientWidth || window.innerWidth) / NATURAL_W;
+  }
+
+  /* --- transform 適用 --- */
+  function apply() {
+    chart.style.transform = `translate(${panX}px,${panY}px) scale(${S})`;
+  }
+
+  /* --- コンテナ高さ更新 ---
+     #chart は transform で縮小されているため
+     getBoundingClientRect().height が実際の表示高さ。
+     それをコンテナ高さとして設定し、鑑定エリアが正しく続くようにする。 */
+  function updateHeight() {
+    const h1H  = (container.querySelector('h1') || {offsetHeight:0}).offsetHeight;
+    // chart の offsetHeight は transform 前の高さ → S を掛けて実際の高さに
+    const scaled = chart.offsetHeight * S;
+    container.style.height = (h1H + scaled + 12) + 'px';
+  }
+
+  /* --- 全体表示にリセット --- */
+  function resetToFit(animate) {
+    initS = calcInitS();
+    S    = initS;
+    panX = 0; // transform-origin:0 0 + width:600px → scale 後に左端が 0 → 全幅に収まる
+    panY = 0;
+    if (animate) {
+      chart.style.transition = 'transform 0.22s ease';
+      requestAnimationFrame(() => {
+        apply();
+        updateHeight();
+        setTimeout(() => { chart.style.transition = ''; }, 240);
+      });
+    } else {
+      apply();
+      updateHeight();
+    }
+  }
+
+  /* --- 初期化タイミング ---
+     main.js が命盤を動的生成した後に呼ばれるよう
+     MutationObserver + load の両方で受け取る */
+  function onChartReady() {
+    // offsetHeight が 0 なら命盤未生成なのでスキップ
+    if (chart.offsetHeight === 0) return;
+    resetToFit(false);
+  }
+
+  window.addEventListener('load', onChartReady);
+
+  new MutationObserver(onChartReady)
+    .observe(chart, { childList: true, subtree: false });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) resetToFit(false);
+  });
+
+  /* ================================================================
+     タッチイベント
+  ================================================================ */
+
+  function dist(t) {
+    const dx = t[0].clientX - t[1].clientX;
+    const dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  // クライアント座標 → コンテンツ座標（transform 前）
+  function toContent(cx, cy) {
+    const r = container.getBoundingClientRect();
+    return {
+      x: (cx - r.left - panX) / S,
+      y: (cy - r.top  - panY) / S
+    };
+  }
+
+  let pinching   = false;
+  let pDist0     = 0;
+  let pS0        = 1;
+  let pPanX0     = 0, pPanY0 = 0;
+  let pMidCX     = 0, pMidCY = 0; // コンテンツ座標のピンチ中心
+
+  let dragging   = false;
+  let dClientX0  = 0, dClientY0 = 0;
+  let dPanX0     = 0, dPanY0   = 0;
+
+  // ダブルタップ検出
+  let lastTapTime = 0;
+
+  container.addEventListener('touchstart', (e) => {
+    if (e.touches.length >= 2) {
+      e.preventDefault();
+      pinching = true;
+      dragging = false;
+
+      pDist0  = dist(e.touches);
+      pS0     = S;
+      pPanX0  = panX;
+      pPanY0  = panY;
+
+      // ピンチ中点をコンテンツ座標で記録（これが固定点になる）
+      const midCX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midCY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const mc = toContent(midCX, midCY);
+      pMidCX = mc.x;
+      pMidCY = mc.y;
+
+    } else if (e.touches.length === 1 && !pinching) {
+      dragging  = true;
+      dClientX0 = e.touches[0].clientX;
+      dClientY0 = e.touches[0].clientY;
+      dPanX0    = panX;
+      dPanY0    = panY;
+    }
+  }, { passive: false });
+
+  container.addEventListener('touchmove', (e) => {
+    if (pinching && e.touches.length >= 2) {
+      e.preventDefault();
+      const d    = dist(e.touches);
+      const newS = Math.min(MAX_SCALE, Math.max(initS * 0.5, pS0 * (d / pDist0)));
+
+      // pan_new = mid_screen - mid_content * S_new
+      // mid_screen = mid_content * pS0 + pPan (ピンチ開始時点のスクリーン座標)
+      const midScreenX = pMidCX * pS0 + pPanX0;
+      const midScreenY = pMidCY * pS0 + pPanY0;
+      panX = midScreenX - pMidCX * newS;
+      panY = midScreenY - pMidCY * newS;
+      S    = newS;
+
+      apply();
+      updateHeight();
+
+    } else if (dragging && e.touches.length === 1) {
+      e.preventDefault();
+      panX = dPanX0 + (e.touches[0].clientX - dClientX0);
+      panY = dPanY0 + (e.touches[0].clientY - dClientY0);
+      apply();
+    }
+  }, { passive: false });
+
+  container.addEventListener('touchend', (e) => {
+    // ピンチ終了
+    if (pinching && e.touches.length < 2) {
+      pinching = false;
+      // S が initS に近い（ほぼ全体表示）なら全体表示にスナップ
+      if (S <= initS * (1 + SNAP_MARGIN)) {
+        resetToFit(true);
+      } else {
+        updateHeight();
       }
-      initS = calcInitS();
-      S     = initS;
-      // 水平方向を中央に配置：(コンテナ幅 - 命盤スケール後幅) / 2
-      const containerW = container.clientWidth || window.innerWidth;
-      panX = (containerW - CHART_NATURAL_W * initS) / 2;
-      panY = 0;
-      applyTransform();
-      updateContainerHeight();
     }
 
-    /* ── transform 適用 ── */
-    function applyTransform() {
-      chart.style.transform = `translate(${panX}px,${panY}px) scale(${S})`;
+    if (e.touches.length === 0) {
+      dragging = false;
+      updateHeight();
     }
 
-    /* ── コンテナ高さ調整（scaled 後の実高さ + h1 + 余白） ── */
-    function updateContainerHeight() {
-      const h1 = container.querySelector('h1');
-      const h1H = h1 ? h1.offsetHeight : 0;
-      // chart の元の高さ × スケール = 表示上の高さ
-      const chartNaturalH = chart.offsetHeight; // transform 前の高さ
-      const scaledH = chartNaturalH * S;
-      container.style.height = (h1H + scaledH + 16) + 'px';
-    }
-
-    /* ── 初期化 ── */
-    function init() {
-      resetToFit(false);
-    }
-
-    window.addEventListener('load', init);
-
-    // 命盤が動的生成されたとき
-    new MutationObserver(() => {
-      resetToFit(false);
-    }).observe(chart, { childList: true, subtree: false });
-
-    window.addEventListener('resize', () => {
-      if (window.innerWidth <= 768) resetToFit(false);
-    });
-
-    /* ===================================================
-       タッチイベント
-       =================================================== */
-
-    /* --- ユーティリティ --- */
-    function dist2(t) {
-      const dx = t[0].clientX - t[1].clientX;
-      const dy = t[0].clientY - t[1].clientY;
-      return Math.sqrt(dx*dx + dy*dy);
-    }
-
-    // クライアント座標 → コンテナ内座標
-    function clientToContainer(cx, cy) {
-      const r = container.getBoundingClientRect();
-      return { x: cx - r.left, y: cy - r.top };
-    }
-
-    /* --- 状態 --- */
-    let pinching      = false;
-    let pinchDist0    = 0;
-    let pinchS0       = 1;
-    let pinchPanX0    = 0, pinchPanY0    = 0;
-    let pinchMidCX    = 0, pinchMidCY    = 0; // コンテナ内中点（固定）
-
-    let dragging      = false;
-    let dragCX0       = 0, dragCY0       = 0;
-    let dragPanX0     = 0, dragPanY0     = 0;
-
-    container.addEventListener('touchstart', (e) => {
-
-      if (e.touches.length >= 2) {
-        e.preventDefault();
-        pinching   = true;
-        dragging   = false;
-        pinchDist0 = dist2(e.touches);
-        pinchS0    = S;
-        pinchPanX0 = panX;
-        pinchPanY0 = panY;
-        // ピンチ開始時の中点（コンテナ内）を固定
-        const c1 = clientToContainer(e.touches[0].clientX, e.touches[0].clientY);
-        const c2 = clientToContainer(e.touches[1].clientX, e.touches[1].clientY);
-        pinchMidCX = (c1.x + c2.x) / 2;
-        pinchMidCY = (c1.y + c2.y) / 2;
-
-      } else if (e.touches.length === 1 && !pinching) {
-        dragging   = true;
-        dragCX0    = e.touches[0].clientX;
-        dragCY0    = e.touches[0].clientY;
-        dragPanX0  = panX;
-        dragPanY0  = panY;
-      }
-
-    }, { passive: false });
-
-    container.addEventListener('touchmove', (e) => {
-
-      if (pinching && e.touches.length >= 2) {
-        e.preventDefault();
-
-        const d       = dist2(e.touches);
-        const rawS    = pinchS0 * (d / pinchDist0);
-        const newS    = Math.min(MAX_SCALE, Math.max(initS * 0.5, rawS));
-
-        /*
-          ピンチ中点（コンテナ内座標 midCX, midCY）が
-          スケール変化の前後で同じ画面位置にあるよう panX/panY を補正。
-
-          transform = translate(panX, panY) scale(S)  (origin = 0 0)
-          コンテナ内の点 p が画面上で同じ場所に見えるには：
-            p = panX + px * S  (px はコンテンツ座標)
-          スケール前後で px が変わらないまま panX だけ変えると：
-            pinchMidCX = panX_new + (pinchMidCX - pinchPanX0) / pinchS0 * newS
-                       ↑これを解くと：
-            panX_new = pinchMidCX - (pinchMidCX - pinchPanX0) / pinchS0 * newS
-        */
-        panX = pinchMidCX - (pinchMidCX - pinchPanX0) / pinchS0 * newS;
-        panY = pinchMidCY - (pinchMidCY - pinchPanY0) / pinchS0 * newS;
-        S    = newS;
-
-        applyTransform();
-        updateContainerHeight();
-
-      } else if (dragging && e.touches.length === 1) {
-        e.preventDefault();
-        panX = dragPanX0 + (e.touches[0].clientX - dragCX0);
-        panY = dragPanY0 + (e.touches[0].clientY - dragCY0);
-        applyTransform();
-      }
-
-    }, { passive: false });
-
-    container.addEventListener('touchend', (e) => {
-
-      if (e.touches.length < 2) {
-        if (pinching) {
-          pinching = false;
-          // ── スナップ判定 ──
-          // 縮小して initS に近づいた（または下回った）なら全体表示に戻す
-          if (S <= initS + SNAP_THRESHOLD) {
-            resetToFit(true);
-          } else {
-            updateContainerHeight();
-          }
-        }
-      }
-
-      if (e.touches.length === 0) {
-        dragging = false;
-        updateContainerHeight();
-      }
-    });
-
-    /* ダブルタップで全体表示に戻す */
-    let lastTap = 0;
-    container.addEventListener('touchend', (e) => {
-      if (e.changedTouches.length !== 1) return;
+    // ダブルタップ：全体表示に戻す
+    if (e.changedTouches.length === 1 && !pinching) {
       const now = Date.now();
-      if (now - lastTap < 300) resetToFit(true);
-      lastTap = now;
-    });
+      if (now - lastTapTime < 280) {
+        resetToFit(true);
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+    }
+  });
 
-  })(); // end initChartPinchZoom
-
+})(); // end initPinchZoom
 </script>
 
-<!-- アプリ本体 JS -->
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
