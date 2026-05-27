@@ -137,12 +137,12 @@
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：ボタンを避けるために余白を確保しつつ、命盤の全高を55vhに縮小 */
+      /* 💡 命盤用コンテナ：潜り込みを防ぐため上部マージンを50pxより大きい68pxに拡張。高さを55vhに。 */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
-        height: 55vh !important; /* 💡 命盤の高さを低く（70vh → 55vh） */
-        margin: 60px auto 15px auto !important; /* ボタンの下に隠れないよう避ける */
+        height: 55vh !important; /* 💡 命盤の高さを低く */
+        margin: 68px auto 15px auto !important; /* 💡 ボタン(50px)の下に隠れるのを完全に避けるため 60px -> 68px に拡張 */
         position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
@@ -197,7 +197,7 @@
         padding: 2px !important;
       }
 
-      /* 💡 中央部（5、6、10、11マス目）：フォントサイズを少し小さく変更 */
+      /* 💡 中央部（5、6、10、11マス目）：文字フォントサイズを7pxに縮小 */
       #chart > div:nth-child(6),
       #chart > div:nth-child(7),
       #chart > div:nth-child(10),
@@ -209,7 +209,7 @@
         line-height: 1.2 !important;
       }
       
-      /* 中央部の中にある子要素も連動 */
+      /* 中央部の中にある子要素も連動して小さく */
       #chart > div:nth-child(6) *,
       #chart > div:nth-child(7) *,
       #chart > div:nth-child(10) *,
@@ -252,7 +252,7 @@
         line-height: 1.1 !important;
       }
 
-      /* 💡 大限／小限の文字サイズを「もっと小さく」かつ指定位置での改行を維持 */
+      /* 💡 大限／小限の文字サイズをもっと小さく（5px） */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -263,7 +263,7 @@
       #chart > div div:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]),
       #chart > div span:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]) {
         font-size: 5px !important; /* 💡 6px → 5px にさらに縮小 */
-        white-space: pre-line !important; /* 「大限：」の後での改行を有効に */
+        white-space: pre-line !important; /* 改行を有効に維持 */
         word-break: break-all !important;
         line-height: 1.0 !important;
         margin-top: 1px !important;
