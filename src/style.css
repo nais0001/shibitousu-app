@@ -222,9 +222,6 @@ body {
 .palace.bg-sanhe { background-color: #fefce8 !important; }
 
 /* ==========================================================================
-   5. 🖨 印刷用スタイル制御（絶対はみ出さない完全リセット版）
-   ========================================================================== */
-/* ==========================================================================
    5. 🖨 印刷用スタイル制御（王道レイアウト解きほぐし版）
    ========================================================================== */
 @media print {
@@ -457,5 +454,59 @@ body {
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   ＜スマホ版＞ 画面表示用の微調整（max-width: 768px）
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+
+  /* 💡 1. 命盤の大限／小限の文字を画面上で非表示にする */
+  .fortune-container {
+    display: none !important;
+  }
+  
+  /* 星の文字が多い宮でも下部に余白を確保できるように調整 */
+  .palace {
+    padding-bottom: 5px !important;
+  }
+
+  /* 💡 2. 中央部（中宮）の文字の行間・余白を詰める */
+  .center-palace {
+    padding: 10px 12px !important; /* 内側の上下余白を20pxから10pxに縮小 */
+    justify-content: flex-start !important; /* 上詰めに固定 */
+  }
+
+  .center-name {
+    font-size: 16px !important; /* 名前を少しスマートに */
+    margin-bottom: 4px !important;
+  }
+
+  .center-divider {
+    margin-bottom: 8px !important; /* 区切り線の下の隙間を半分に */
+  }
+
+  .center-info-item {
+    margin-bottom: 4px !important;  /* 各行の間隔を10pxから4pxに縮小（間延び解消） */
+    padding-bottom: 2px !important;
+    font-size: 12px !important;      /* 文字サイズをわずかに調整 */
+  }
+  
+  /* 命盤番号（No.）の配置調整 */
+  .center-palace div[style*="position: absolute"] {
+    bottom: 4px !important; /* 下にべったり張り付きすぎないよう微調整 */
+    left: 12px !important;
+  }
+}
+
+/* ==========================================================================
+   🖨 印刷用スタイルの保護（既存の @media print の挙動を上書きしないための防護柵）
+   ========================================================================== */
+@media print {
+  /* 印刷時は大限・小限を確実に復活させる */
+  .fortune-container {
+    display: flex !important;
   }
 }
