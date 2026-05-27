@@ -627,7 +627,7 @@ async function updateReadingContent(userName, patterns, element, patternNumber =
   readingArea.style.height = `${readingArea.scrollHeight}px`;
 }
 // ==========================================
-// 印刷処理用のトリガー関数（関数名は変更なし）
+// 印刷処理用のトリガー関数（関数名は変更なし）  
 // ==========================================
 function printChartAndReading() {
   window.print();
