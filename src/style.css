@@ -462,34 +462,41 @@ body {
    ========================================================================== */
 @media screen and (max-width: 768px) {
 
+  /* 各宮（マス目）を絶対配置の基準点にする */
+  .palace {
+    position: relative !important;
+    padding-bottom: 5px !important;
+  }
+
   /* 💡 1. 命盤の大限／小限の文字を画面上で完全に非表示にする */
   .fortune-container {
     display: none !important;
   }
   
-  /* 星の文字が多い宮でも下部に無駄な余白を残さない */
-  .palace {
-    padding-bottom: 5px !important;
+  /* 💡 2. 各宮の干支（stem-branch）を各マスの「右上」へ強制的に絶対配置 */
+  .palace .stem-branch {
+    position: absolute !important;
+    top: 8px !important;       /* マスの真上からの距離 */
+    right: 8px !important;     /* マスの真右からの距離 */
+    text-align: right !important;
+    font-size: 11px !important;
+    color: #777 !important;
+    z-index: 10 !important;
+    margin: 0 !important;
   }
 
-  /* 💡 2. タイトルのすぐ右隣（インライン右上）に干支が収まるように制御 */
+  /* タイトルコンテナ自体の枠線や余白の基本を維持 */
   .title-container {
-    display: flex !important;
-    justify-content: flex-start !important; /* 左寄せ（宮名・タグ・干支を左から順に並べる） */
-    align-items: center !important;
-    gap: 6px !important;                    /* 各要素の間の横方向の隙間 */
     border-bottom: 1px solid #eee !important;
     padding-bottom: 3px !important;
     margin-bottom: 5px !important;
     width: 100% !important;
   }
 
-  /* 干支のスタイル：宮名たちの右隣に自然に並び、テキストは左寄せ */
-  .palace .stem-branch {
-    text-align: left !important;
-    font-size: 11px !important;
-    color: #777 !important;
-    margin: 0 !important;
+  /* 宮名（命宮など）と身宮タグが右上の干支と重ならないよう、幅を狭めて左寄せを確定 */
+  .title {
+    max-width: 70% !important;
+    display: inline-block !important;
   }
 
   /* 💡 3. 中央部（中宮）の文字の間延びを解消（行間・余白をスマートに圧縮） */
