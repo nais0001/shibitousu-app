@@ -566,6 +566,9 @@ async function renderChart(event) {
     
     root.appendChild(centerDiv);
 
+    // 命盤描画完了をスマホビューアに通知
+    window.dispatchEvent(new Event('chartRendered'));
+
     // 鑑定内容エリアの自動連動
     await updateReadingContent(name || "鑑定ユーザー", finalPatterns, elementalText, finalPatternNumber);
 

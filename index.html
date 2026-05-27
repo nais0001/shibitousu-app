@@ -656,22 +656,49 @@
        最後の1つが追加されてから一定時間変化がなくなった時点で
        「完成」と判断して initView を呼ぶ。
        連続追加中は都度タイマーをリセットし、潜り込みを防ぐ。 */
-    /* 命盤が動的生成／再生成されたら initView を呼ぶ。
-       宮の追加が止まって 200ms 後に「完成」と判断してリセット。
-       連続追加中はタイマーを都度リセットし、潜り込みを防ぐ。 */
-    let initTimer  = null;
-    let prevCount  = 0;
+    /*
+      命盤の「完成」検出について
+      --------------------------
+      main.js は root.innerHTML="" で全消去してから宮を1つずつ appendChild する。
+      MutationObserver で監視すると12回以上発火して initView が連続実行され
+      「潜り込む」動作になるため、Observer は使わない。
+
+      代わりに main.js 側の renderChart 完了後に
+        window.dispatchEvent(new Event('chartRendered'))
+      を発火させ、それを受け取って initView を呼ぶ。
+
+      main.js を変更できない場合のフォールバックとして、
+      innerHTML="" （子要素0）→ appendChild 完了（子要素13）の
+      「空になった後に子要素が増えた最初の1回のみ」を捕まえる方式も併用する。
+    */
+
+    /* main.js が chartRendered イベントを発行した場合 */
+    window.addEventListener('chartRendered', function () {
+      initView();
+    });
+
+    /* フォールバック：innerHTML="" で空になった後、
+       子要素が初めて追加された瞬間から一定時間後に initView を1回だけ呼ぶ */
+    let fallbackTimer = null;
+    let wasEmpty = false;
 
     new MutationObserver(function () {
       const count = chart.children.length;
-      if (count === 0) return;
-      /* 子要素が増えていたらタイマーをリセット */
-      if (count !== prevCount) {
-        prevCount = count;
-        clearTimeout(initTimer);
-        initTimer = setTimeout(function () {
+
+      if (count === 0) {
+        /* 空になった = 再描画開始の合図 */
+        wasEmpty = true;
+        clearTimeout(fallbackTimer);
+        return;
+      }
+
+      if (wasEmpty && count >= 12) {
+        /* 空 → 12宮以上追加完了 → 完成とみなす（1回だけ） */
+        wasEmpty = false;
+        clearTimeout(fallbackTimer);
+        fallbackTimer = setTimeout(function () {
           initView();
-        }, 200);
+        }, 50);
       }
     }).observe(chart, { childList: true });
 
