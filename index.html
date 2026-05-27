@@ -137,7 +137,7 @@
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：幅は98%、高さは画面縦の65% */
+      /* 💡 命盤用コンテナ：幅98%、高さは画面縦の65%にがっちり固定 */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
@@ -152,10 +152,11 @@
         box-sizing: border-box;
       }
 
-      /* タイトル文字のサイズ */
+      /* タイトル文字 */
       #chart-container h1 {
         font-size: 15px !important;
-        margin: 8px auto 4px auto;
+        margin: 0 !important;
+        padding: 6px 0 !important;
         text-align: center;
         width: 100%;
         display: block;
@@ -163,20 +164,39 @@
         top: 0;
         left: 0;
         z-index: 20;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid #eee;
+        box-sizing: border-box;
+        height: 32px;
       }
 
-      /* 💡 命盤本体：コンテナを縦長いっぱいにフィットさせるための基本設定 */
+      /* 💡 命盤本体（コア修正）：固定幅（600px）を完全に撤廃。
+         コンテナの横幅・縦幅（タイトルを除いた残り高）の100%いっぱいに引き伸ばし、
+         12マス自体を縦長の形状に変形させてジャストフィットさせます。 */
       #chart {
-        width: max-content !important;
-        min-width: unset !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        height: calc(100% - 32px) !important; /* コンテナ高の65vhからタイトル分32pxを引いた全高 */
+        min-height: unset !important;
         margin: 0 !important;
         position: absolute !important;
         left: 0 !important;
-        top: 0 !important;
+        top: 32px !important; /* タイトルの直下から配置 */
         display: grid !important;
+        /* もし元のmain.js側で grid-template-columns 等が固定px指定されていても、ここで1:1:1:1の可変（fr）に強制上書き */
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(4, 1fr) !important;
         transform-origin: 0 0 !important;
         will-change: transform;
+        box-sizing: border-box;
+      }
+
+      /* 命盤内の各マス（12マスと中央エリア）も縦長に自動追従 */
+      #chart > div {
+        width: 100% !important;
+        height: 100% !important;
+        box-sizing: border-box;
+        overflow: hidden !important; /* 文字溢れ防止 */
       }
 
       /* 星の名前：左寄せ */
@@ -186,7 +206,7 @@
       #chart div[class*="star"] {
         text-align: left !important;
         justify-content: flex-start !important;
-        padding-left: 6px !important;
+        padding-left: 4px !important;
       }
 
       /* 大限・小限 2行 */
@@ -198,7 +218,7 @@
         display: block !important;
         white-space: pre-line !important;
         word-break: break-all !important;
-        line-height: 1.3 !important;
+        line-height: 1.2 !important;
       }
 
       /* 鑑定書エリア */
@@ -272,9 +292,13 @@
       #chart {
         display: grid !important;
         width: 100% !important;
+        height: auto !important;
         transform: none !important;
         margin: 0 auto !important;
         position: static !important;
+        /* 印刷時は本来の綺麗なグリッド比率に戻す */
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(4, 1fr) !important;
       }
 
       #chart .star,
@@ -445,11 +469,15 @@
     const savedLeft = chart.style.left;
     const savedTop = chart.style.top;
     const savedPosition = chart.style.position;
+    const savedWidth = chart.style.width;
+    const savedHeight = chart.style.height;
 
     chart.style.transform = 'none';
     chart.style.left = 'auto';
     chart.style.top = 'auto';
     chart.style.position = 'static';
+    chart.style.width = '100%';
+    chart.style.height = 'auto';
 
     window.print();
 
@@ -457,16 +485,17 @@
     chart.style.left = savedLeft;
     chart.style.top = savedTop;
     chart.style.position = savedPosition;
+    chart.style.width = savedWidth;
+    chart.style.height = savedHeight;
   }
 
   /* =====================================================
-     💡 スマホ専用 命盤マルチタッチビューア制御（縦長コンテナいっぱい全体フィット版）
+     💡 スマホ専用 命盤マルチタッチビューア制御（縦長変形コンテナ100%追従版）
   ===================================================== */
   (function() {
     const container = document.getElementById('chart-container');
     const chart = document.getElementById('chart');
     
-    let baseScale = 1; 
     let scale = 1;
     let panX = 0;
     let panY = 0;
@@ -474,60 +503,37 @@
     let startX = 0, startY = 0;
     let startTouchDistance = 0;
 
-    // 💡 命盤を縦長コンテナ（65vh分）いっぱいに綺麗に縦横フィットさせる計算関数
+    // 💡 完全にCSS側で100%フィットさせるため、初期状態は移動量0、拡大率1の等倍配置
     function initChartView() {
       if (window.innerWidth > 768) {
         chart.style.transform = 'none';
         return;
       }
       
-      if (container.clientWidth === 0) return;
-    
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-    
-      // 実際の命盤サイズ
-      const chartWidth = chart.scrollWidth || 600;
-      const chartHeight = chart.scrollHeight || 600;
-    
-      // 💡 タイトルの高さを考慮した有効なコンテナ領域を算出
-      const titleHeight = 35;
-      const availableHeight = containerHeight - titleHeight;
-
-      // 💡 横幅と縦幅の制限のうち、コンテナいっぱいにピッタリ収まる「最大比率」を選択
-      baseScale = Math.min(
-        containerWidth / chartWidth,
-        availableHeight / chartHeight
-      );
-    
-      scale = baseScale;
-    
-      // 💡 命盤の上が窮屈にならず、コンテナ内の適正な位置に収まるように中央寄せ＆上部マッピング
-      panX = (containerWidth - chartWidth * scale) / 2 / scale;
-      panY = titleHeight / scale;
+      scale = 1;
+      panX = 0;
+      panY = 0;
     
       applyTransform();
     }
 
     window.triggerInitChartView = initChartView;
 
-    // 2. CSS への反映
     function applyTransform() {
       if (window.innerWidth <= 768) {
-        // 💡 ズレの起きにくい標準的なマトリクス順序に最適化
-        chart.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+        // 💡 縦長に変形した状態を基準（1倍）として、そこからのピンチ・ドラッグ移動量を合成
+        chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
       }
     }
 
-    // 3. タッチイベント（マルチタッチ、ドラッグ移動対応）
+    // 3. タッチイベント（ピンチによる拡大・ドラッグに対応。縮小すると一瞬で縦長いっぱいに戻ります）
     container.addEventListener('touchstart', function(e) {
       if (window.innerWidth > 768) return;
       
       if (e.touches.length === 1) {
         isDragging = true;
-        // 起点計算
-        startX = e.touches[0].clientX / scale - panX;
-        startY = e.touches[0].clientY / scale - panY;
+        startX = e.touches[0].clientX - panX;
+        startY = e.touches[0].clientY - panY;
       } else if (e.touches.length === 2) {
         isDragging = false;
         startTouchDistance = Math.hypot(
@@ -541,8 +547,8 @@
       if (window.innerWidth > 768) return;
 
       if (e.touches.length === 1 && isDragging) {
-        panX = e.touches[0].clientX / scale - startX;
-        panY = e.touches[0].clientY / scale - startY;
+        panX = e.touches[0].clientX - startX;
+        panY = e.touches[0].clientY - startY;
         applyTransform();
       } else if (e.touches.length === 2) {
         const currentDistance = Math.hypot(
@@ -551,7 +557,8 @@
         );
         if (startTouchDistance > 0) {
           const factor = currentDistance / startTouchDistance;
-          scale = Math.min(Math.max(baseScale * 0.9, scale * (1 + (factor - 1) * 0.3)), baseScale * 3);
+          // スケール変更（基準は縦長満杯の1倍）
+          scale = Math.min(Math.max(0.9, scale * (1 + (factor - 1) * 0.3)), 4);
           applyTransform();
         }
       }
@@ -562,11 +569,11 @@
       isDragging = false;
       startTouchDistance = 0;
 
-      // 縮小操作、または初期倍率付近なら自動で初期の綺麗なコンテナいっぱい表示に戻る
-      if (scale <= baseScale * 1.02) {
+      // 拡大を解くか指を引き離したら、コンテナ縦長いっぱいに自動でピタッと吸着リセット
+      if (scale <= 1.05) {
         initChartView();
-        chart.style.transition = 'transform 0.25s ease-out';
-        setTimeout(() => { chart.style.transition = 'none'; }, 260);
+        chart.style.transition = 'transform 0.2s ease-out';
+        setTimeout(() => { chart.style.transition = 'none'; }, 210);
       }
     });
 
