@@ -198,45 +198,39 @@
         font-size: 3px !important; /* 全体の標準フォントを小さく */
       }
 
-      /* 💡 主星や副星など、すべての星テキストのサイズを小さく調整 */
-      #chart .star,
-      #chart .main-star,
-      #chart .sub-star,
-      #chart div[class*="star"],
-      #chart span[class*="star"] {
-        font-size: 7px !important; 
-        text-align: left !important;
-        justify-content: flex-start !important;
-        padding-left: 2px !important;
-        line-height: 1.1 !important;
-      }
-
-      /* 💡 宮名（命宮、兄弟宮など）や輝度（廟旺利陥）の調整 */
-      #chart .palace,
-      #chart .gong,
-      #chart .palace-name,
-      #chart .brightness,
-      #chart div[class*="palace"],
-      #chart div[class*="status"] {
-        font-size: 2px !important;
-        line-height: 1.1 !important;
-      }
-
-      /* 💡 大限・小限・年齢などのテキスト：文字を小さくし、行間を詰めて全文字を収める */
-      #chart .daigen,
-      #chart .shogen,
-      #chart .period-text,
-      #chart .age,
-      #chart div[class*="daigen"],
-      #chart div[class*="shogen"],
-      #chart div[class*="age"] {
-        display: block !important;
-        font-size: 2px !important; /* 複数行が重ならないよう一回り小さく */
-        white-space: pre-line !important;
-        word-break: break-all !important;
-        line-height: 1.1 !important; /* 行間を極限まで詰める */
-        margin-top: 1px !important;
-      }
+      /* =====================================================
+           スマホ（max-width: 768px）内の文字サイズ調整（強制版）
+        ===================================================== */
+      
+        /* 1. 星の名前（主星・副星など）：クラス名に "star" が含まれる要素を【大きく】 */
+        #chart [class*="star"],
+        #chart .star,
+        #chart .main-star,
+        #chart .sub-star {
+          font-size: 7px !important;    /* 💡 さらに大きく14pxに設定 */
+          font-weight: bold !important;  /* 太字で強調 */
+          line-height: 1.2 !important;
+          text-align: left !important;
+        }
+      
+        /* 2. 宮名・大限・小限・年齢など【それ以外の文字をすべて強制的に小さく】
+           星（star）以外のテキストや、マスの中の細かい文字を一括で極小化します */
+        #chart > div div:not([class*="star"]),
+        #chart > div span:not([class*="star"]),
+        #chart .palace,
+        #chart .daigen,
+        #chart .shogen,
+        #chart .age,
+        #chart .period-text,
+        #chart [class*="palace"],
+        #chart [class*="daigen"],
+        #chart [class*="shogen"],
+        #chart [class*="age"] {
+          font-size: 5px !important;   /* 💡 変化がわかるように7.5pxまで小さく指定 */
+          line-height: 1.0 !important;   /* 行間も限界まで詰める */
+          margin: 0 !important;
+          padding: 0 !important;
+        }
 
       /* 鑑定書エリア */
       #reading-container {
