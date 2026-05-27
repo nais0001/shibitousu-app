@@ -458,55 +458,46 @@ body {
 }
 
 
-/* ==========================================================================
-   ＜スマホ版＞ 画面表示用の微調整（max-width: 768px）
-   ========================================================================== */
 @media screen and (max-width: 768px) {
 
-  /* 💡 1. 命盤の大限／小限の文字を画面上で非表示にする */
-  .fortune-container {
-    display: none !important;
-  }
-  
-  /* 星の文字が多い宮でも下部に余白を確保できるように調整 */
+  /* 💡 各宮（マス目）を絶対配置の基準点にする */
   .palace {
-    padding-bottom: 5px !important;
+    position: relative !important;
   }
 
-  /* 💡 2. 中央部（中宮）の文字の行間・余白を詰める */
-  .center-palace {
-    padding: 10px 12px !important; /* 内側の上下余白を20pxから10pxに縮小 */
-    justify-content: flex-start !important; /* 上詰めに固定 */
+  /* 💡 スマホ版：干支（stem-branch）を各マスの「右上」へ完全に引っ越し */
+  .palace .stem-branch {
+    position: absolute !important;
+    top: 6px !important;    /* 上からの位置微調整 */
+    right: 8px !important;  /* 右からの位置微調整 */
+    text-align: right !important;
+    font-size: 10px !important; /* スマホで見やすいように少しスマートに */
+    color: #666 !important;
+    z-index: 10 !important;
   }
 
-  .center-name {
-    font-size: 16px !important; /* 名前を少しスマートに */
-    margin-bottom: 4px !important;
+  /* 💡 干支が右上に引っ越したため、タイトル（宮名）と被らないように道を開ける */
+  .palace .title-container {
+    width: 75% !important; /* 右側の25%を干支用のスペースとして空ける */
+    border-bottom: 1px solid #eee !important;
   }
 
-  .center-divider {
-    margin-bottom: 8px !important; /* 区切り線の下の隙間を半分に */
-  }
-
-  .center-info-item {
-    margin-bottom: 4px !important;  /* 各行の間隔を10pxから4pxに縮小（間延び解消） */
-    padding-bottom: 2px !important;
-    font-size: 12px !important;      /* 文字サイズをわずかに調整 */
-  }
-  
-  /* 命盤番号（No.）の配置調整 */
-  .center-palace div[style*="position: absolute"] {
-    bottom: 4px !important; /* 下にべったり張り付きすぎないよう微調整 */
-    left: 12px !important;
-  }
 }
 
 /* ==========================================================================
-   🖨 印刷用スタイルの保護（既存の @media print の挙動を上書きしないための防護柵）
+   🖨 印刷用スタイルの保護（印刷時の120%拡大グリッドが崩れないように隔離）
    ========================================================================== */
 @media print {
-  /* 印刷時は大限・小限を確実に復活させる */
-  .fortune-container {
-    display: flex !important;
+  .palace {
+    position: relative !important; /* 印刷時の既存ロジックを維持 */
+  }
+  .palace .stem-branch {
+    position: absolute !important; /* 印刷時も右上 absolute の指定は元々効いているため、そのままの位置をキープ */
+    top: auto !important;
+    right: 0 !important;
+    text-align: right !important;
+  }
+  .palace .title-container {
+    width: 100% !important; /* 印刷時は100%幅に戻す */
   }
 }
