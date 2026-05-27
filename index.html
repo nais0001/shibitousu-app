@@ -175,7 +175,7 @@
         left: 0 !important;
         top: 0 !important;
         display: grid !important;
-        transform-origin: 0 0 !important; /* 起点を左上に完全固定 */
+        transform-origin: center center !important;
         will-change: transform;
       }
 
@@ -245,20 +245,18 @@
 
       /* 💡 印刷コンテナ：浮き上がりを無くすため、高さを完全に解除し通常配置へ */
       #chart-container {
-        display: block !important;
         width: 100% !important;
-        height: auto !important; /* 高さをクリア */
-        max-height: none !important;
-        position: static !important; /* absoluteを完全解除 */
-        overflow: visible !important;
-        page-break-inside: avoid !important;
-        page-break-after: always !important; /* 💡 命盤を1ページ目に独立させ、次を必ず改ページ */
-        text-align: center !important;
-        margin: 0 auto !important;
-        padding: 0 0 0 25px !important; /* 左端の欠け防止 */
-        background: none !important;
-        border: none !important;
-        box-sizing: border-box;
+        height: calc(100vh - 60px) !important;
+      
+        margin: 50px auto 0 auto !important;
+      
+        overflow: hidden !important;
+      
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+      
+        background: #fcfcfc;
       }
 
       #chart-container h1 {
@@ -481,21 +479,19 @@
     let startTouchDistance = 0;
 
     function initChartView() {
+    
       if (window.innerWidth > 768) {
         chart.style.transform = 'none';
         return;
       }
     
-      if (container.clientWidth === 0) return;
-    
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
     
-      // 実際の命盤サイズ取得
       const chartWidth = chart.scrollWidth;
       const chartHeight = chart.scrollHeight;
     
-      // 命盤全体が必ず収まる倍率
+      // 「高さ優先」で最大表示
       baseScale = Math.min(
         containerWidth / chartWidth,
         containerHeight / chartHeight
@@ -503,11 +499,15 @@
     
       scale = baseScale;
     
-      // 中央配置
-      panX = (containerWidth - chartWidth * scale) / 2 / scale;
-      panY = (containerHeight - chartHeight * scale) / 2 / scale;
+      // 完全中央配置
+      const offsetX =
+        (containerWidth - chartWidth * scale) / 2;
     
-      applyTransform();
+      const offsetY =
+        (containerHeight - chartHeight * scale) / 2;
+    
+      chart.style.transform =
+        `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
     }
 
     window.triggerInitChartView = initChartView;
