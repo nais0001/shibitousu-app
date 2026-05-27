@@ -269,11 +269,22 @@
       }
 
       #chart {
+        width: auto !important;
+        min-width: auto !important;
+      
+        margin: 0 !important;
+      
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+      
         display: grid !important;
-        width: 100% !important;
-        transform: none !important; /* 印刷時の縮小・移動を完全解除 */
-        margin: 0 auto !important;
-        position: static !important; /* 重なりを解消 */
+      
+        transform-origin: top left !important;
+      
+        visibility: visible !important;
+      
+        will-change: transform;
       }
 
       #chart .star,
@@ -491,15 +502,25 @@
       const chartWidth = chart.scrollWidth;
       const chartHeight = chart.scrollHeight;
     
-      // 「高さ優先」で最大表示
+      // 💡 命盤未生成時は何もしない
+      if (chartWidth === 0 || chartHeight === 0) {
+        return;
+      }
+    
+      // 命盤全体フィット
       baseScale = Math.min(
         containerWidth / chartWidth,
         containerHeight / chartHeight
       );
     
+      // 異常値防止
+      if (!isFinite(baseScale) || baseScale <= 0) {
+        baseScale = 1;
+      }
+    
       scale = baseScale;
     
-      // 完全中央配置
+      // 中央配置
       const offsetX =
         (containerWidth - chartWidth * scale) / 2;
     
