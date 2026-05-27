@@ -83,24 +83,25 @@
 
       /*
         命盤コンテナ
-        トップバー50px の直下から始まる固定ボックス。
-        overflow:hidden で命盤をクリップし、
-        中の #chart を grid で埋め尽くす。
+        通常フローに置き、トップバー50px分だけ margin-top で下げる。
+        高さは画面高さの約60%。overflow:hidden でクリップ。
+        鑑定書はその下に続くので普通にスクロールできる。
       */
       #chart-container {
-        position: fixed !important;
-        top: 50px !important;
-        left: 0 !important;
-        width: 100% !important;
-        /* 画面高さ - トップバー50px - 鑑定エリアのための余白170px */
-        height: calc(100vh - 50px - 170px) !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        width: 98% !important;
+        margin: 58px auto 12px auto !important;
+        height: calc(100svh - 50px - 170px) !important;
         min-height: 180px !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
-        border-bottom: 1px solid #ddd;
+        border: 1px solid #eee;
+        border-radius: 8px;
         touch-action: none;
         box-sizing: border-box;
-        z-index: 100;
+        z-index: auto;
       }
 
       /* タイトル */
@@ -172,17 +173,10 @@
         margin-top: 1px !important; text-align: left !important;
       }
 
-      /*
-        鑑定書エリア：命盤コンテナ（fixed）の分だけ上に余白を取る。
-        命盤高さ = 100vh - 50px - 170px
-        鑑定エリアは その下から始まる
-      */
+      /* 鑑定書エリア：通常フローなので margin-top は不要 */
       #reading-container {
-        margin-top: calc(100vh - 50px - 170px + 50px + 8px) !important;
         width: 98% !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        margin-bottom: 30px !important;
+        margin: 0 auto 30px auto !important;
         box-sizing: border-box;
         position: relative; z-index: 10;
       }
