@@ -71,37 +71,26 @@
 
     .print-only-text { display: none; }
 
-    /* 💡 表示トラブルを防ぐため、初期状態から常に display: block に統一 */
-    .init-hidden-mobile {
-      display: block !important;
-    }
+    /* 初期状態は非表示（JS側で制御） */
+    .init-hidden-mobile { display: block; }
 
     /* =====================================================
        スマホ（max-width: 768px）
     ===================================================== */
     @media screen and (max-width: 768px) {
 
-      body {
-        padding-top: 50px !important; /* 固定ボタンの高さ分、開始位置を下げる */
-        box-sizing: border-box;
-      }
-
       .app-layout {
-        display: flex !important;
-        flex-direction: column !important;
+        display: block;
         width: 100%;
-        box-sizing: border-box;
       }
 
       .main-content {
         width: 100%;
         padding: 0;
         box-sizing: border-box;
-        display: flex !important;
-        flex-direction: column !important;
       }
 
-      /* 条件入力ボタン */
+      /* 条件入力ボタン（固定トップバー） */
       .mobile-menu-toggle {
         display: block;
         position: fixed;
@@ -148,12 +137,12 @@
         top: 50px !important;
       }
 
-      /* 命盤用コンテナ */
+      /* 💡 命盤用コンテナ：ボタンを避けるために余白を確保しつつ、命盤の全高を55vhに縮小 */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
-        height: 55vh !important; /* 命盤の高さを低めに維持 */
-        margin: 10px auto !important;
+        height: 55vh !important; /* 💡 命盤の高さを低く（70vh → 55vh） */
+        margin: 60px auto 15px auto !important; /* ボタンの下に隠れないよう避ける */
         position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
@@ -208,19 +197,19 @@
         padding: 2px !important;
       }
 
-      /* 中央部（5、6、10、11マス目）：7px指定 */
+      /* 💡 中央部（5、6、10、11マス目）：フォントサイズを少し小さく変更 */
       #chart > div:nth-child(6),
       #chart > div:nth-child(7),
       #chart > div:nth-child(10),
       #chart > div:nth-child(11),
       #chart .center-palace,
       #chart [class*="center"] {
-        font-size: 7px !important;
+        font-size: 7px !important; /* 💡 8px → 7px に小さく */
         font-weight: bold !important;
         line-height: 1.2 !important;
       }
       
-      /* 中央部の子要素 */
+      /* 中央部の中にある子要素も連動 */
       #chart > div:nth-child(6) *,
       #chart > div:nth-child(7) *,
       #chart > div:nth-child(10) *,
@@ -263,7 +252,7 @@
         line-height: 1.1 !important;
       }
 
-      /* 大限／小限の文字サイズ（極小5px）& 指定位置改行対応 */
+      /* 💡 大限／小限の文字サイズを「もっと小さく」かつ指定位置での改行を維持 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -273,8 +262,8 @@
       #chart [class*="age"],
       #chart > div div:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]),
       #chart > div span:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]) {
-        font-size: 5px !important;
-        white-space: pre-line !important;
+        font-size: 5px !important; /* 💡 6px → 5px にさらに縮小 */
+        white-space: pre-line !important; /* 「大限：」の後での改行を有効に */
         word-break: break-all !important;
         line-height: 1.0 !important;
         margin-top: 1px !important;
@@ -294,10 +283,14 @@
         width: 100% !important;
         box-sizing: border-box;
       }
+
+      .init-hidden-mobile {
+        display: none !important;
+      }
     }
 
     /* =====================================================
-       印刷レイアウト
+       印刷レイアウト（1ページ内収め・重なり完全解消）
     ===================================================== */
     @media print {
       html, body, .app-layout, .main-content {
@@ -364,6 +357,7 @@
         padding-left: 8px !important;
       }
 
+      /* 印刷画面で大限・小限を確実に「左端から表示」 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -496,7 +490,6 @@
       document.getElementById('sidebar').classList.remove('active');
     }
     
-    // JSエラーを回避するため個別チェックに変更
     document.querySelectorAll('.init-hidden-mobile').forEach(el => {
       el.style.setProperty('display', 'block', 'important');
     });
@@ -574,7 +567,7 @@
     window.triggerInitChartView = initChartView;
 
     function applyTransform() {
-      if (window.innerWidth <= 768 && chart) {
+      if (window.innerWidth <= 768) {
         chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
       }
     }
@@ -636,6 +629,12 @@
       }
     });
     observer.observe(chart, { childList: true });
+    
+    if (window.innerWidth > 768) {
+      document.querySelectorAll('.init-hidden-mobile').forEach(el => {
+        el.style.display = 'block';
+      });
+    }
 
     setTimeout(initChartView, 400);
   })();
