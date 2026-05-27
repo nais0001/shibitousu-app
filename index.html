@@ -70,8 +70,6 @@
     }
 
     .print-only-text { display: none; }
-
-    /* 初期状態は非表示（JS側で制御） */
     .init-hidden-mobile { display: block; }
 
     /* =====================================================
@@ -90,7 +88,7 @@
         box-sizing: border-box;
       }
 
-      /* 条件入力ボタン（固定トップバー） */
+      /* 固定トップバー（高さ 50px） */
       .mobile-menu-toggle {
         display: block;
         position: fixed;
@@ -108,7 +106,7 @@
         cursor: pointer;
       }
 
-      /* 入力パネル */
+      /* 入力パネル：active 時に top:50px でトップバー直下へ */
       #sidebar {
         position: fixed !important;
         left: 0 !important;
@@ -129,20 +127,26 @@
         display: none !important;
       }
 
-      #sidebar .form-group:first-of-type {
-        margin-top: 5px !important;
-      }
-
       #sidebar.active {
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：潜り込みを防ぐため上部マージンを50pxより大きい68pxに拡張。高さを55vhに。 */
+      /*
+        命盤コンテナ
+        ----------------------------------------
+        トップバー = 50px（fixed）
+        タイトル h1 = 28px（absolute、コンテナ内上部）
+        ----------------------------------------
+        margin-top: 58px … トップバー50px + 余白8px
+        height: calc(100svh - 58px - 28px - 170px)
+          = 画面高さ - margin-top - タイトル - 鑑定エリア確保分
+      */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
-        height: 55vh !important; /* 💡 命盤の高さを低く */
-        margin: 68px auto 15px auto !important; /* 💡 ボタン(50px)の下に隠れるのを完全に避けるため 60px -> 68px に拡張 */
+        height: calc(100svh - 58px - 28px - 170px) !important;
+        min-height: 200px !important;
+        margin: 58px auto 10px auto !important;
         position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
@@ -152,11 +156,13 @@
         box-sizing: border-box;
       }
 
-      /* タイトル文字 */
+      /* タイトル文字（コンテナ内上部に固定） */
       #chart-container h1 {
         font-size: 13px !important;
         margin: 0 !important;
-        padding: 6px 0 !important;
+        padding: 0 !important;
+        line-height: 28px !important;
+        height: 28px !important;
         text-align: center;
         width: 100%;
         display: block;
@@ -164,22 +170,21 @@
         top: 0;
         left: 0;
         z-index: 20;
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255,255,255,0.95);
         border-bottom: 1px solid #eee;
         box-sizing: border-box;
-        height: 32px;
       }
 
-      /* 命盤本体 */
+      /* 命盤本体：タイトル行の下から残り全高を使う */
       #chart {
         width: 100% !important;
         min-width: 100% !important;
-        height: calc(100% - 32px) !important;
+        height: calc(100% - 28px) !important;
         min-height: unset !important;
         margin: 0 !important;
         position: absolute !important;
         left: 0 !important;
-        top: 32px !important;
+        top: 28px !important;
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
         grid-template-rows: repeat(4, 1fr) !important;
@@ -188,7 +193,7 @@
         box-sizing: border-box;
       }
 
-      /* 各マスの共通スタイル */
+      /* 各マス */
       #chart > div {
         width: 100% !important;
         height: 100% !important;
@@ -197,19 +202,18 @@
         padding: 2px !important;
       }
 
-      /* 💡 中央部（5、6、10、11マス目）：文字フォントサイズを7pxに縮小 */
+      /* 中央部マス */
       #chart > div:nth-child(6),
       #chart > div:nth-child(7),
       #chart > div:nth-child(10),
       #chart > div:nth-child(11),
       #chart .center-palace,
       #chart [class*="center"] {
-        font-size: 7px !important; /* 💡 8px → 7px に小さく */
+        font-size: 7px !important;
         font-weight: bold !important;
         line-height: 1.2 !important;
       }
-      
-      /* 中央部の中にある子要素も連動して小さく */
+
       #chart > div:nth-child(6) *,
       #chart > div:nth-child(7) *,
       #chart > div:nth-child(10) *,
@@ -218,7 +222,7 @@
         font-weight: bold !important;
       }
 
-      /* 星の名前（主星・副星など） */
+      /* 星の名前 */
       #chart [class*="star"],
       #chart .star,
       #chart .main-star,
@@ -230,12 +234,11 @@
         justify-content: flex-start !important;
       }
 
-      /* 宮の干支（「辛酉」など）を右端表示 */
+      /* 干支 */
       #chart .ganzi,
       #chart .kanji,
       #chart .stem-branch,
       #chart [class*="ganzi"],
-      #chart [class*="干支"],
       #chart div.ganzi,
       #chart span.ganzi {
         text-align: right !important;
@@ -245,14 +248,14 @@
         box-sizing: border-box;
       }
 
-      /* 宮の名前（命宮・兄弟宮など） */
+      /* 宮名 */
       #chart .palace,
       #chart [class*="palace"] {
         font-size: 7px !important;
         line-height: 1.1 !important;
       }
 
-      /* 💡 大限／小限の文字サイズをもっと小さく（5px） */
+      /* 大限・小限・年齢など */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -262,8 +265,8 @@
       #chart [class*="age"],
       #chart > div div:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]),
       #chart > div span:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]) {
-        font-size: 5px !important; /* 💡 6px → 5px にさらに縮小 */
-        white-space: pre-line !important; /* 改行を有効に維持 */
+        font-size: 5px !important;
+        white-space: pre-line !important;
         word-break: break-all !important;
         line-height: 1.0 !important;
         margin-top: 1px !important;
@@ -290,7 +293,7 @@
     }
 
     /* =====================================================
-       印刷レイアウト（1ページ内収め・重なり完全解消）
+       印刷
     ===================================================== */
     @media print {
       html, body, .app-layout, .main-content {
@@ -335,6 +338,8 @@
         margin-bottom: 20px !important;
         background: none !important;
         position: static !important;
+        height: auto !important;
+        line-height: normal !important;
       }
 
       #chart {
@@ -357,7 +362,6 @@
         padding-left: 8px !important;
       }
 
-      /* 印刷画面で大限・小限を確実に「左端から表示」 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -366,8 +370,6 @@
       #chart [class*="age"] {
         display: block !important;
         text-align: left !important;
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
         padding-left: 4px !important;
         white-space: pre-line !important;
       }
@@ -481,6 +483,7 @@
 </div>
 
 <script>
+  /* サイドバー開閉 */
   function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('active');
   }
@@ -489,7 +492,7 @@
     if (window.innerWidth <= 768) {
       document.getElementById('sidebar').classList.remove('active');
     }
-    
+
     document.querySelectorAll('.init-hidden-mobile').forEach(el => {
       el.style.setProperty('display', 'block', 'important');
     });
@@ -504,6 +507,7 @@
     }, 250);
   }
 
+  /* 印刷 */
   function printChart() {
     const ta  = document.getElementById('reading-text');
     const div = document.getElementById('print-reading-text');
@@ -514,129 +518,148 @@
       .replace(/\n/g, '<br>');
 
     const chart = document.getElementById('chart');
-    
-    const savedTransform = chart.style.transform;
-    const savedLeft = chart.style.left;
-    const savedTop = chart.style.top;
-    const savedPosition = chart.style.position;
-    const savedWidth = chart.style.width;
-    const savedHeight = chart.style.height;
-
-    chart.style.transform = 'none';
-    chart.style.left = 'auto';
-    chart.style.top = 'auto';
-    chart.style.position = 'static';
-    chart.style.width = '100%';
-    chart.style.height = 'auto';
-
+    const s = {
+      transform : chart.style.transform,
+      left      : chart.style.left,
+      top       : chart.style.top,
+      position  : chart.style.position,
+      width     : chart.style.width,
+      height    : chart.style.height
+    };
+    chart.style.cssText += ';transform:none;left:auto;top:auto;position:static;width:100%;height:auto;';
     window.print();
-
-    chart.style.transform = savedTransform;
-    chart.style.left = savedLeft;
-    chart.style.top = savedTop;
-    chart.style.position = savedPosition;
-    chart.style.width = savedWidth;
-    chart.style.height = savedHeight;
+    Object.assign(chart.style, s);
   }
 
-  /* スマホ専用 命盤マルチタッチビューア制御 */
-  (function() {
+  /* ============================================================
+     スマホ専用 命盤ビューア（ピンチズーム＋ドラッグ）
+  ============================================================ */
+  (function () {
     const container = document.getElementById('chart-container');
-    const chart = document.getElementById('chart');
-    
-    let scale = 1;
-    let panX = 0;
-    let panY = 0;
-    let isDragging = false;
-    let startX = 0, startY = 0;
-    let startTouchDistance = 0;
+    const chart     = document.getElementById('chart');
 
-    function initChartView() {
-      if (window.innerWidth > 768) {
-        chart.style.transform = 'none';
-        return;
-      }
-      
+    let scale  = 1;
+    let panX   = 0;
+    let panY   = 0;
+
+    /* transform 適用 */
+    function applyTransform() {
+      if (window.innerWidth > 768) { chart.style.transform = 'none'; return; }
+      chart.style.transform = `translate(${panX}px,${panY}px) scale(${scale})`;
+    }
+
+    /* 全体表示にリセット */
+    function initView() {
+      if (window.innerWidth > 768) { chart.style.transform = 'none'; return; }
       scale = 1;
-      panX = 0;
-      panY = 0;
-    
+      panX  = 0;
+      panY  = 0;
+      chart.style.transition = 'none';
       applyTransform();
     }
 
-    window.triggerInitChartView = initChartView;
+    window.triggerInitChartView = initView;
 
-    function applyTransform() {
-      if (window.innerWidth <= 768) {
-        chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-      }
+    /* ---- タッチ変数 ---- */
+    let dragActive   = false;
+    let dragStartX   = 0, dragStartY = 0;
+
+    let pinchActive  = false;
+    let pinchDist0   = 0;
+    let pinchScale0  = 1;
+    let pinchPanX0   = 0, pinchPanY0 = 0;
+    let pinchMidX    = 0, pinchMidY  = 0; /* コンテナ内中点（固定） */
+
+    function getTouchDist(t) {
+      return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     }
 
-    container.addEventListener('touchstart', function(e) {
+    container.addEventListener('touchstart', function (e) {
       if (window.innerWidth > 768) return;
-      
-      if (e.touches.length === 1) {
-        isDragging = true;
-        startX = e.touches[0].clientX - panX;
-        startY = e.touches[0].clientY - panY;
-      } else if (e.touches.length === 2) {
-        isDragging = false;
-        startTouchDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
+
+      if (e.touches.length === 2) {
+        pinchActive = true;
+        dragActive  = false;
+        pinchDist0  = getTouchDist(e.touches);
+        pinchScale0 = scale;
+        pinchPanX0  = panX;
+        pinchPanY0  = panY;
+
+        /* ピンチ中点をコンテナ座標で記録 */
+        const r = container.getBoundingClientRect();
+        pinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left;
+        pinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+
+      } else if (e.touches.length === 1 && !pinchActive) {
+        dragActive = true;
+        dragStartX = e.touches[0].clientX - panX;
+        dragStartY = e.touches[0].clientY - panY;
       }
     }, { passive: true });
 
-    container.addEventListener('touchmove', function(e) {
+    container.addEventListener('touchmove', function (e) {
       if (window.innerWidth > 768) return;
 
-      if (e.touches.length === 1 && isDragging) {
-        panX = e.touches[0].clientX - startX;
-        panY = e.touches[0].clientY - startY;
+      if (pinchActive && e.touches.length === 2) {
+        e.preventDefault();
+        const d      = getTouchDist(e.touches);
+        const ratio  = d / pinchDist0;
+        const newScale = Math.min(5, Math.max(0.5, pinchScale0 * ratio));
+
+        /*
+          ピンチ中点（コンテナ座標 pinchMidX/Y）がスクリーン上で動かないよう
+          panX/Y を補正する。
+          スクリーン上の中点 = pinchMidX * pinchScale0 + pinchPanX0（開始時点で固定）
+        */
+        const midSX = pinchMidX * pinchScale0 + pinchPanX0;
+        const midSY = pinchMidY * pinchScale0 + pinchPanY0;
+        panX  = midSX - pinchMidX * newScale;
+        panY  = midSY - pinchMidY * newScale;
+        scale = newScale;
+
         applyTransform();
-      } else if (e.touches.length === 2) {
-        const currentDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        if (startTouchDistance > 0) {
-          const factor = currentDistance / startTouchDistance;
-          scale = Math.min(Math.max(0.9, scale * (1 + (factor - 1) * 0.3)), 4);
-          applyTransform();
+
+      } else if (dragActive && e.touches.length === 1) {
+        panX = e.touches[0].clientX - dragStartX;
+        panY = e.touches[0].clientY - dragStartY;
+        applyTransform();
+      }
+    }, { passive: false });
+
+    container.addEventListener('touchend', function (e) {
+      if (window.innerWidth > 768) return;
+
+      if (pinchActive && e.touches.length < 2) {
+        pinchActive = false;
+        /* scale が 1.1 以下なら全体表示にスナップ */
+        if (scale <= 1.1) {
+          chart.style.transition = 'transform 0.2s ease-out';
+          initView();
+          setTimeout(() => { chart.style.transition = 'none'; }, 220);
         }
       }
+
+      if (e.touches.length === 0) {
+        dragActive = false;
+      }
     }, { passive: true });
 
-    container.addEventListener('touchend', function(e) {
-      if (window.innerWidth > 768) return;
-      isDragging = false;
-      startTouchDistance = 0;
-
-      if (scale <= 1.05) {
-        initChartView();
-        chart.style.transition = 'transform 0.2s ease-out';
-        setTimeout(() => { chart.style.transition = 'none'; }, 210);
-      }
-    });
-
-    window.addEventListener('resize', initChartView);
-    
-    const observer = new MutationObserver(function(mutations, obs) {
-      if (document.getElementById('chart').children.length > 0) {
-        initChartView();
-        obs.disconnect();
-      }
-    });
-    observer.observe(chart, { childList: true });
-    
+    /* PC では常に表示 */
     if (window.innerWidth > 768) {
       document.querySelectorAll('.init-hidden-mobile').forEach(el => {
         el.style.display = 'block';
       });
     }
 
-    setTimeout(initChartView, 400);
+    /* 命盤が動的生成されたら initView を呼ぶ */
+    new MutationObserver(function (_, obs) {
+      if (chart.children.length > 0) {
+        initView();
+        obs.disconnect();
+      }
+    }).observe(chart, { childList: true });
+
+    window.addEventListener('resize', initView);
   })();
 </script>
 
