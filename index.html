@@ -71,17 +71,18 @@
 
     .print-only-text { display: none; }
 
-    /* 初期状態は非表示（JS側で制御） */
-    .init-hidden-mobile { display: block; }
+    /* 💡 表示トラブルを防ぐため、初期状態から常に display: block に統一 */
+    .init-hidden-mobile {
+      display: block !important;
+    }
 
     /* =====================================================
        スマホ（max-width: 768px）
     ===================================================== */
     @media screen and (max-width: 768px) {
 
-      /* 💡 画面全体を縦並びのFlexにし、上部に固定ボタン分の絶対的な余白を確約 */
       body {
-        padding-top: 50px !important; /* 💡 固定ボタンの高さ(50px)分、全体の開始位置を下げる */
+        padding-top: 50px !important; /* 固定ボタンの高さ分、開始位置を下げる */
         box-sizing: border-box;
       }
 
@@ -100,7 +101,7 @@
         flex-direction: column !important;
       }
 
-      /* 条件入力ボタン（固定トップバー） */
+      /* 条件入力ボタン */
       .mobile-menu-toggle {
         display: block;
         position: fixed;
@@ -147,12 +148,12 @@
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：padding-topの効果により、絶対にボタンの下に潜り込まない構造に */
+      /* 命盤用コンテナ */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
         height: 55vh !important; /* 命盤の高さを低めに維持 */
-        margin: 10px auto !important; /* bodyに余白があるため、marginは最小限で安全 */
+        margin: 10px auto !important;
         position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
@@ -292,10 +293,6 @@
       #reading-text {
         width: 100% !important;
         box-sizing: border-box;
-      }
-
-      .init-hidden-mobile {
-        display: none !important;
       }
     }
 
@@ -499,6 +496,7 @@
       document.getElementById('sidebar').classList.remove('active');
     }
     
+    // JSエラーを回避するため個別チェックに変更
     document.querySelectorAll('.init-hidden-mobile').forEach(el => {
       el.style.setProperty('display', 'block', 'important');
     });
@@ -576,7 +574,7 @@
     window.triggerInitChartView = initChartView;
 
     function applyTransform() {
-      if (window.innerWidth <= 768) {
+      if (window.innerWidth <= 768 && chart) {
         chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
       }
     }
@@ -638,12 +636,6 @@
       }
     });
     observer.observe(chart, { childList: true });
-    
-    if (window.innerWidth > 768) {
-      document.querySelectorAll('.init-hidden-mobile').forEach(el => {
-        el.style.display = 'block';
-      });
-    }
 
     setTimeout(initChartView, 400);
   })();
