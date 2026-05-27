@@ -170,8 +170,6 @@
       #chart {
         width: max-content !important;
         min-width: unset !important;
-        //width: 600px !important;
-        //min-width: 600px !important;
         margin: 0 !important;
         position: absolute !important;
         left: 0 !important;
@@ -493,21 +491,21 @@
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
     
-      // 実際の命盤サイズを取得
+      // 実際の命盤サイズ取得
       const chartWidth = chart.scrollWidth;
       const chartHeight = chart.scrollHeight;
     
-      // 命盤全体が必ず収まる倍率を自動計算
+      // 命盤全体が必ず収まる倍率
       baseScale = Math.min(
         containerWidth / chartWidth,
-        (containerHeight - 40) / chartHeight
+        containerHeight / chartHeight
       );
     
       scale = baseScale;
     
-      // 中央寄せ
+      // 中央配置
       panX = (containerWidth - chartWidth * scale) / 2 / scale;
-      panY = 20 / scale;
+      panY = (containerHeight - chartHeight * scale) / 2 / scale;
     
       applyTransform();
     }
@@ -517,11 +515,11 @@
     // 2. CSS への反映
     function applyTransform() {
       if (window.innerWidth <= 768) {
-        // scaleをかけてから、右上寄りの初期位置(panX, panY)へ正確にマッピング
-        chart.style.transform =`translate(${panX * scale}px, ${panY * scale}px) scale(${scale})`;
-        //chart.style.transform = `scale(${scale}) translate(${panX}px, ${panY / scale}px)`;
+        chart.style.transform =
+          `translate(${panX * scale}px, ${panY * scale}px) scale(${scale})`;
       }
     }
+    
 
     // 3. タッチイベント（マルチタッチ、ドラッグ移動対応）
     container.addEventListener('touchstart', function(e) {
