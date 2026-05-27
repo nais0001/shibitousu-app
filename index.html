@@ -651,11 +651,27 @@
       });
     }
 
-    /* 命盤が動的生成されたら initView を呼ぶ */
-    new MutationObserver(function (_, obs) {
-      if (chart.children.length > 0) {
-        initView();
-        obs.disconnect();
+    /* 命盤が動的生成されたら initView を呼ぶ。
+       main.js は宮を1つずつ appendChild するため、
+       最後の1つが追加されてから一定時間変化がなくなった時点で
+       「完成」と判断して initView を呼ぶ。
+       連続追加中は都度タイマーをリセットし、潜り込みを防ぐ。 */
+    /* 命盤が動的生成／再生成されたら initView を呼ぶ。
+       宮の追加が止まって 200ms 後に「完成」と判断してリセット。
+       連続追加中はタイマーを都度リセットし、潜り込みを防ぐ。 */
+    let initTimer  = null;
+    let prevCount  = 0;
+
+    new MutationObserver(function () {
+      const count = chart.children.length;
+      if (count === 0) return;
+      /* 子要素が増えていたらタイマーをリセット */
+      if (count !== prevCount) {
+        prevCount = count;
+        clearTimeout(initTimer);
+        initTimer = setTimeout(function () {
+          initView();
+        }, 200);
       }
     }).observe(chart, { childList: true });
 
