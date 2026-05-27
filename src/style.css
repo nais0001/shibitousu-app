@@ -457,33 +457,46 @@ body {
   }
 }
 
-
-/* ==========================================================================
-   ＜スマホ版＞ 画面表示用の微調整（max-width: 768px）
-   ========================================================================== */
 /* ==========================================================================
    ＜スマホ版＞ 画面表示用の微調整（max-width: 768px）
    ========================================================================== */
 @media screen and (max-width: 768px) {
 
-  /* 💡 1. 命盤の大限／小限の文字を画面上で非表示にする */
+  /* 💡 1. 命盤の大限／小限の文字を画面上で完全に非表示にする */
   .fortune-container {
     display: none !important;
   }
   
-  /* 星の文字が多い宮でも下部に余白を確保できるように調整 */
+  /* 星の文字が多い宮でも下部に無駄な余白を残さない */
   .palace {
     padding-bottom: 5px !important;
   }
 
-  /* 💡 2. 中央部（中宮）の文字の行間・余白を詰める */
+  /* 💡 2. 各宮のタイトル内を並び替えて干支（stem-branch）を「右上」に固定 */
+  .title-container {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 1px solid #eee !important;
+    padding-bottom: 3px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .palace .stem-branch {
+    text-align: right !important;
+    margin-left: auto !important; /* flexボックスの中で最も右（右上）に押し出します */
+    font-size: 11px !important;
+    color: #777 !important;
+  }
+
+  /* 💡 3. 中央部（中宮）の文字の間延びを解消（行間・余白をスマートに圧縮） */
   .center-palace {
     padding: 10px 12px !important; /* 内側の上下余白を20pxから10pxに縮小 */
     justify-content: flex-start !important; /* 上詰めに固定 */
   }
 
   .center-name {
-    font-size: 16px !important; /* 名前を少しスマートに */
+    font-size: 16px !important; /* 名前を少しコンパクトに */
     margin-bottom: 4px !important;
   }
 
@@ -501,15 +514,5 @@ body {
   .center-palace div[style*="position: absolute"] {
     bottom: 4px !important; /* 下にべったり張り付きすぎないよう微調整 */
     left: 12px !important;
-  }
-}
-
-/* ==========================================================================
-   🖨 印刷用スタイルの保護（既存の @media print の挙動を上書きしないための防護柵）
-   ========================================================================== */
-@media print {
-  /* 印刷時は大限・小限を確実に復活させる */
-  .fortune-container {
-    display: flex !important;
   }
 }
