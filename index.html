@@ -137,7 +137,7 @@
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：幅98%、高さは画面縦の65%にがっちり固定 */
+      /* 命盤用コンテナ：幅98%、高さは画面縦の65% */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
@@ -154,7 +154,7 @@
 
       /* タイトル文字 */
       #chart-container h1 {
-        font-size: 15px !important;
+        font-size: 14px !important;
         margin: 0 !important;
         padding: 6px 0 !important;
         text-align: center;
@@ -170,20 +170,17 @@
         height: 32px;
       }
 
-      /* 💡 命盤本体（コア修正）：固定幅（600px）を完全に撤廃。
-         コンテナの横幅・縦幅（タイトルを除いた残り高）の100%いっぱいに引き伸ばし、
-         12マス自体を縦長の形状に変形させてジャストフィットさせます。 */
+      /* 命盤本体：コンテナサイズに合わせた縦長フィット */
       #chart {
         width: 100% !important;
         min-width: 100% !important;
-        height: calc(100% - 32px) !important; /* コンテナ高の65vhからタイトル分32pxを引いた全高 */
+        height: calc(100% - 32px) !important;
         min-height: unset !important;
         margin: 0 !important;
         position: absolute !important;
         left: 0 !important;
-        top: 32px !important; /* タイトルの直下から配置 */
+        top: 32px !important;
         display: grid !important;
-        /* もし元のmain.js側で grid-template-columns 等が固定px指定されていても、ここで1:1:1:1の可変（fr）に強制上書き */
         grid-template-columns: repeat(4, 1fr) !important;
         grid-template-rows: repeat(4, 1fr) !important;
         transform-origin: 0 0 !important;
@@ -191,34 +188,52 @@
         box-sizing: border-box;
       }
 
-      /* 命盤内の各マス（12マスと中央エリア）も縦長に自動追従 */
+      /* 💡 命盤内の各マス（12マスと中央）共通の文字サイズ調整 */
       #chart > div {
         width: 100% !important;
         height: 100% !important;
         box-sizing: border-box;
-        overflow: hidden !important; /* 文字溢れ防止 */
+        overflow: hidden !important;
+        padding: 2px !important; /* 内側の余白を詰め、有効領域を確保 */
+        font-size: 10px !important; /* 全体の標準フォントを小さく */
       }
 
-      /* 星の名前：左寄せ */
+      /* 💡 主星や副星など、すべての星テキストのサイズを小さく調整 */
       #chart .star,
       #chart .main-star,
       #chart .sub-star,
-      #chart div[class*="star"] {
+      #chart div[class*="star"],
+      #chart span[class*="star"] {
+        font-size: 10px !important; 
         text-align: left !important;
         justify-content: flex-start !important;
-        padding-left: 4px !important;
+        padding-left: 2px !important;
+        line-height: 1.1 !important;
       }
 
-      /* 大限・小限 2行 */
+      /* 💡 宮名（命宮、兄弟宮など）や輝度（廟旺利陥）の調整 */
+      #chart .palace,
+      #chart .brightness,
+      #chart div[class*="palace"],
+      #chart div[class*="status"] {
+        font-size: 10px !important;
+        line-height: 1.1 !important;
+      }
+
+      /* 💡 大限・小限・年齢などのテキスト：文字を小さくし、行間を詰めて全文字を収める */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
+      #chart .age,
       #chart div[class*="daigen"],
-      #chart div[class*="shogen"] {
+      #chart div[class*="shogen"],
+      #chart div[class*="age"] {
         display: block !important;
+        font-size: 9px !important; /* 複数行が重ならないよう一回り小さく */
         white-space: pre-line !important;
         word-break: break-all !important;
-        line-height: 1.2 !important;
+        line-height: 1.1 !important; /* 行間を極限まで詰める */
+        margin-top: 1px !important;
       }
 
       /* 鑑定書エリア */
@@ -296,7 +311,6 @@
         transform: none !important;
         margin: 0 auto !important;
         position: static !important;
-        /* 印刷時は本来の綺麗なグリッド比率に戻す */
         grid-template-columns: repeat(4, 1fr) !important;
         grid-template-rows: repeat(4, 1fr) !important;
       }
@@ -490,7 +504,7 @@
   }
 
   /* =====================================================
-     💡 スマホ専用 命盤マルチタッチビューア制御（縦長変形コンテナ100%追従版）
+     スマホ専用 命盤マルチタッチビューア制御
   ===================================================== */
   (function() {
     const container = document.getElementById('chart-container');
@@ -503,7 +517,6 @@
     let startX = 0, startY = 0;
     let startTouchDistance = 0;
 
-    // 💡 完全にCSS側で100%フィットさせるため、初期状態は移動量0、拡大率1の等倍配置
     function initChartView() {
       if (window.innerWidth > 768) {
         chart.style.transform = 'none';
@@ -521,12 +534,10 @@
 
     function applyTransform() {
       if (window.innerWidth <= 768) {
-        // 💡 縦長に変形した状態を基準（1倍）として、そこからのピンチ・ドラッグ移動量を合成
         chart.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
       }
     }
 
-    // 3. タッチイベント（ピンチによる拡大・ドラッグに対応。縮小すると一瞬で縦長いっぱいに戻ります）
     container.addEventListener('touchstart', function(e) {
       if (window.innerWidth > 768) return;
       
@@ -557,7 +568,6 @@
         );
         if (startTouchDistance > 0) {
           const factor = currentDistance / startTouchDistance;
-          // スケール変更（基準は縦長満杯の1倍）
           scale = Math.min(Math.max(0.9, scale * (1 + (factor - 1) * 0.3)), 4);
           applyTransform();
         }
@@ -569,7 +579,6 @@
       isDragging = false;
       startTouchDistance = 0;
 
-      // 拡大を解くか指を引き離したら、コンテナ縦長いっぱいに自動でピタッと吸着リセット
       if (scale <= 1.05) {
         initChartView();
         chart.style.transition = 'transform 0.2s ease-out';
