@@ -137,12 +137,12 @@
         top: 50px !important;
       }
 
-      /* 命盤用コンテナ：幅98%、高さは画面縦の65% */
+      /* 💡 命盤用コンテナ：条件入力ボタン(50px)の下に隠れないようmarginを調整、高さ約70%に拡張 */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
-        height: 65vh !important;
-        margin: 60px auto 15px auto !important;
+        height: 70vh !important; /* 画面縦長さ70%くらいにして全体表示 */
+        margin: 55px auto 15px auto !important; /* 上部隠れ防止のため55px確保 */
         position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
@@ -154,7 +154,7 @@
 
       /* タイトル文字 */
       #chart-container h1 {
-        font-size: 12px !important;
+        font-size: 14px !important;
         margin: 0 !important;
         padding: 6px 0 !important;
         text-align: center;
@@ -188,49 +188,71 @@
         box-sizing: border-box;
       }
 
-      /* 💡 命盤内の各マス（12マスと中央）共通の文字サイズ調整 */
+      /* 各マスの共通スタイル */
       #chart > div {
         width: 100% !important;
         height: 100% !important;
         box-sizing: border-box;
         overflow: hidden !important;
-        padding: 2px !important; /* 内側の余白を詰め、有効領域を確保 */
-        font-size: 3px !important; /* 全体の標準フォントを小さく */
+        padding: 2px !important;
       }
 
-      /* =====================================================
-           スマホ（max-width: 768px）内の文字サイズ調整（強制版）
-        ===================================================== */
-      
-        /* 1. 星の名前（主星・副星など）：クラス名に "star" が含まれる要素を【大きく】 */
-        #chart [class*="star"],
-        #chart .star,
-        #chart .main-star,
-        #chart .sub-star {
-          font-size: 7px !important;    /* 💡 さらに大きく14pxに設定 */
-          font-weight: bold !important;  /* 太字で強調 */
-          line-height: 1.2 !important;
-          text-align: left !important;
-        }
-      
-        /* 2. 宮名・大限・小限・年齢など【それ以外の文字をすべて強制的に小さく】
-           星（star）以外のテキストや、マスの中の細かい文字を一括で極小化します */
-        #chart > div div:not([class*="star"]),
-        #chart > div span:not([class*="star"]),
-        #chart .palace,
-        #chart .daigen,
-        #chart .shogen,
-        #chart .age,
-        #chart .period-text,
-        #chart [class*="palace"],
-        #chart [class*="daigen"],
-        #chart [class*="shogen"],
-        #chart [class*="age"] {
-          font-size: 5px !important;   /* 💡 変化がわかるように7.5pxまで小さく指定 */
-          line-height: 1.0 !important;   /* 行間も限界まで詰める */
-          margin: 0 !important;
-          padding: 0 !important;
-        }
+      /* 💡 中央部（5マス目・6マス目・10マス目・11マス目の囲み、または中央要素）の文字を大きく */
+      #chart > div:nth-child(6),
+      #chart > div:nth-child(7),
+      #chart > div:nth-child(10),
+      #chart > div:nth-child(11),
+      #chart .center-palace,
+      #chart [class*="center"] {
+        font-size: 14px !important; /* 中央部フォントを大きく */
+        font-weight: bold !important;
+        line-height: 1.3 !important;
+      }
+      /* 中央部の中にある全テキストノードや子要素も追従 */
+      #chart > div:nth-child(6) *,
+      #chart > div:nth-child(7) *,
+      #chart > div:nth-child(10) *,
+      #chart > div:nth-child(11) * {
+        font-size: 14px !important;
+        font-weight: bold !important;
+      }
+
+      /* 星の名前（主星・副星など） */
+      #chart [class*="star"],
+      #chart .star,
+      #chart .main-star,
+      #chart .sub-star {
+        font-size: 12px !important; /* 星の名前は少し大きめを維持 */
+        font-weight: bold !important;
+        line-height: 1.2 !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+      }
+
+      /* 宮の名前（命宮・兄弟宮など） */
+      #chart .palace,
+      #chart [class*="palace"] {
+        font-size: 7.5px !important; /* 宮の名前をもっと小さく */
+        line-height: 1.1 !important;
+      }
+
+      /* 💡 大限／小限の文字サイズを小さく & 「大限：」での改行を防止 */
+      #chart .daigen,
+      #chart .shogen,
+      #chart .period-text,
+      #chart .age,
+      #chart [class*="daigen"],
+      #chart [class*="shogen"],
+      #chart [class*="age"],
+      #chart > div div:not([class*="star"]):not([class*="center"]),
+      #chart > div span:not([class*="star"]):not([class*="center"]) {
+        font-size: 7.5px !important; /* 大限／小限の文字サイズをもう少し小さく */
+        white-space: nowrap !important; /* 💡 「大限：」での改行を防止して1行で表示 */
+        word-break: keep-all !important;
+        line-height: 1.0 !important; /* 行間も小さく */
+        margin-top: 1px !important;
+        text-align: left !important;
+      }
 
       /* 鑑定書エリア */
       #reading-container {
@@ -246,7 +268,6 @@
         box-sizing: border-box;
       }
 
-      /* 初期画面（未作成時）は非表示にするクラス */
       .init-hidden-mobile {
         display: none !important;
       }
@@ -320,14 +341,17 @@
         padding-left: 8px !important;
       }
 
+      /* 💡 印刷画面で大限・小限を確実に「左端から表示」させる設定 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
       #chart div[class*="daigen"],
-      #chart div[class*="shogen"] {
+      #chart div[class*="shogen"],
+      #chart [class*="age"] {
         display: block !important;
-        text-align: left !important;
+        text-align: left !important; /* 💡 左端寄せに強制固定 */
         justify-content: flex-start !important;
+        align-items: flex-start !important;
         padding-left: 4px !important;
         white-space: pre-line !important;
       }
@@ -499,9 +523,7 @@
     chart.style.height = savedHeight;
   }
 
-  /* =====================================================
-     スマホ専用 命盤マルチタッチビューア制御
-  ===================================================== */
+  /* スマホ専用 命盤マルチタッチビューア制御 */
   (function() {
     const container = document.getElementById('chart-container');
     const chart = document.getElementById('chart');
