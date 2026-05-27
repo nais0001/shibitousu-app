@@ -137,12 +137,12 @@
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：条件入力ボタン(50px)を完全に避けるためmargin-topを65pxに設定 */
+      /* 💡 命盤用コンテナ：ボタンを避けるために余白を確保しつつ、命盤の全高を55vhに縮小 */
       #chart-container {
         width: 98% !important;
         max-width: 98% !important;
-        height: 70vh !important; /* 画面縦長さ70%くらいにして全体表示 */
-        margin: 65px auto 15px auto !important; /* 💡 ボタンに隠れないよう完全に避ける */
+        height: 55vh !important; /* 💡 命盤の高さを低く（70vh → 55vh） */
+        margin: 60px auto 15px auto !important; /* ボタンの下に隠れないよう避ける */
         position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
@@ -154,7 +154,7 @@
 
       /* タイトル文字 */
       #chart-container h1 {
-        font-size: 14px !important;
+        font-size: 13px !important;
         margin: 0 !important;
         padding: 6px 0 !important;
         text-align: center;
@@ -197,28 +197,28 @@
         padding: 2px !important;
       }
 
-      /* 💡 中央部（5、6、10、11マス目）の文字サイズ（提示いただいた8pxを適用） */
+      /* 💡 中央部（5、6、10、11マス目）：フォントサイズを少し小さく変更 */
       #chart > div:nth-child(6),
       #chart > div:nth-child(7),
       #chart > div:nth-child(10),
       #chart > div:nth-child(11),
       #chart .center-palace,
       #chart [class*="center"] {
-        font-size: 8px !important;
+        font-size: 7px !important; /* 💡 8px → 7px に小さく */
         font-weight: bold !important;
-        line-height: 1.3 !important;
+        line-height: 1.2 !important;
       }
       
-      /* 中央部の中にある子要素 */
+      /* 中央部の中にある子要素も連動 */
       #chart > div:nth-child(6) *,
       #chart > div:nth-child(7) *,
       #chart > div:nth-child(10) *,
       #chart > div:nth-child(11) * {
-        font-size: 8px !important;
+        font-size: 7px !important;
         font-weight: bold !important;
       }
 
-      /* 星の名前（主星・副星など：提示いただいた6pxを適用） */
+      /* 星の名前（主星・副星など） */
       #chart [class*="star"],
       #chart .star,
       #chart .main-star,
@@ -230,7 +230,7 @@
         justify-content: flex-start !important;
       }
 
-      /* 💡 宮の干支（「辛酉」など）や右下に配置される特定の星の文字を右端表示にする設定 */
+      /* 宮の干支（「辛酉」など）を右端表示 */
       #chart .ganzi,
       #chart .kanji,
       #chart .stem-branch,
@@ -245,14 +245,14 @@
         box-sizing: border-box;
       }
 
-      /* 宮の名前（命宮・兄弟宮など：提示いただいた7pxを適用） */
+      /* 宮の名前（命宮・兄弟宮など） */
       #chart .palace,
       #chart [class*="palace"] {
         font-size: 7px !important;
         line-height: 1.1 !important;
       }
 
-      /* 💡 大限／小限の文字サイズ（6px） & 「大限：」で改行を入れる設定 */
+      /* 💡 大限／小限の文字サイズを「もっと小さく」かつ指定位置での改行を維持 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -262,10 +262,10 @@
       #chart [class*="age"],
       #chart > div div:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]),
       #chart > div span:not([class*="star"]):not([class*="center"]):not([class*="ganzi"]) {
-        font-size: 6px !important;
-        white-space: pre-line !important; /* 💡 nowrapから変更し、「大限：」での改行を許可 */
-        word-break: break-all !important;  /* 枠幅に合わせて確実に折り返す */
-        line-height: 1.1 !important;
+        font-size: 5px !important; /* 💡 6px → 5px にさらに縮小 */
+        white-space: pre-line !important; /* 「大限：」の後での改行を有効に */
+        word-break: break-all !important;
+        line-height: 1.0 !important;
         margin-top: 1px !important;
         text-align: left !important;
       }
@@ -357,7 +357,7 @@
         padding-left: 8px !important;
       }
 
-      /* 💡 印刷画面で大限・小限を確実に「左端から表示」させる設定 */
+      /* 印刷画面で大限・小限を確実に「左端から表示」 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
@@ -365,7 +365,7 @@
       #chart div[class*="shogen"],
       #chart [class*="age"] {
         display: block !important;
-        text-align: left !important; /* 💡 左端寄せに強制固定 */
+        text-align: left !important;
         justify-content: flex-start !important;
         align-items: flex-start !important;
         padding-left: 4px !important;
