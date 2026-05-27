@@ -1,50 +1,40 @@
+```html id="5q8w7n"
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      content="width=device-width,
+               initial-scale=1.0,
+               maximum-scale=1.0,
+               user-scalable=no">
 
 <title>紫微斗数 命盤作成アプリ</title>
 
 <style>
 
 /* =====================================================
-   PC
+   共通
 ===================================================== */
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-  padding: 20px;
+* {
   box-sizing: border-box;
-  min-width: 0;
 }
 
-#sidebar {
-  width: 320px;
-  min-width: 320px;
-  background: #f5f5f5;
-  padding: 20px;
-  box-sizing: border-box;
-  border-left: 1px solid #ddd;
-}
-
-#sidebar h2 {
-  margin-top: 0;
-}
-
-.mobile-menu-toggle {
-  display: none;
+button {
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 .form-group {
@@ -62,15 +52,6 @@ html, body {
 #reading-text {
   width: 100%;
   padding: 8px;
-  box-sizing: border-box;
-}
-
-button {
-  padding: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 4px;
 }
 
 .print-only-text {
@@ -82,8 +63,28 @@ button {
 }
 
 /* =====================================================
-   PC命盤
+   PC
 ===================================================== */
+
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
+}
+
+#sidebar {
+  width: 320px;
+  min-width: 320px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-left: 1px solid #ddd;
+}
 
 #chart-container {
   width: 100%;
@@ -94,6 +95,10 @@ button {
 #chart {
   display: grid;
   margin: 0 auto;
+}
+
+.mobile-menu-toggle {
+  display: none;
 }
 
 /* =====================================================
@@ -110,29 +115,40 @@ button {
     padding: 0;
   }
 
-  /* 上部ボタン */
+  /* =====================================================
+     上部ボタン
+  ===================================================== */
 
   .mobile-menu-toggle {
+
     display: block;
+
     position: fixed;
+
     top: 0;
     left: 0;
+
     width: 100%;
     height: 50px;
 
     background: #4CAF50;
+
     color: white;
 
-    line-height: 50px;
     text-align: center;
-    font-weight: bold;
+    line-height: 50px;
 
     z-index: 9999;
+
+    font-weight: bold;
   }
 
-  /* サイドバー */
+  /* =====================================================
+     サイドバー
+  ===================================================== */
 
   #sidebar {
+
     position: fixed !important;
 
     top: -100vh;
@@ -148,11 +164,11 @@ button {
 
     z-index: 9998;
 
-    border: none;
-
     padding: 15px !important;
 
     transition: top 0.3s ease;
+
+    border: none !important;
   }
 
   #sidebar.active {
@@ -164,7 +180,7 @@ button {
   }
 
   /* =====================================================
-     命盤コンテナ（縦長）
+     命盤コンテナ
   ===================================================== */
 
   #chart-container {
@@ -173,25 +189,23 @@ button {
 
     height: calc(100vh - 55px) !important;
 
-    margin: 55px auto 0 auto !important;
+    margin-top: 55px !important;
 
     overflow: hidden !important;
 
     position: relative !important;
 
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-
     background: #fcfcfc;
 
-    box-sizing: border-box;
+    border-top: 1px solid #ddd;
   }
 
   /* タイトル */
 
   #chart-container h1 {
+
     position: absolute;
+
     top: 0;
     left: 0;
 
@@ -199,13 +213,13 @@ button {
 
     margin: 0;
 
-    padding: 8px 0;
+    padding: 6px 0;
 
     font-size: 15px;
 
     background: rgba(255,255,255,0.9);
 
-    z-index: 10;
+    z-index: 20;
   }
 
   /* =====================================================
@@ -216,20 +230,23 @@ button {
 
     display: grid !important;
 
-    width: max-content !important;
+    width: 600px !important;
 
-    min-width: unset !important;
+    min-width: 600px !important;
+
+    position: absolute !important;
+
+    left: 0 !important;
+    top: 0 !important;
 
     margin: 0 !important;
-
-    position: relative !important;
 
     transform-origin: top left !important;
 
     will-change: transform;
   }
 
-  /* 星名 */
+  /* 星 */
 
   #chart .star,
   #chart .main-star,
@@ -265,7 +282,6 @@ button {
 
   #reading-text {
     width: 100%;
-    box-sizing: border-box;
   }
 
   /* 初期非表示 */
@@ -295,8 +311,6 @@ button {
     overflow: visible !important;
 
     page-break-after: always !important;
-
-    text-align: center;
   }
 
   #chart {
@@ -318,7 +332,9 @@ button {
   }
 
   .print-only-text {
+
     display: block !important;
+
     white-space: pre-wrap !important;
   }
 }
@@ -381,21 +397,31 @@ button {
 
     <div class="form-group">
       <label>お名前</label>
+
       <input type="text"
              id="user-name"
              value="鑑定ユーザー">
     </div>
 
     <div class="form-group">
+
       <label>暦の種類</label>
 
       <select id="date-type">
-        <option value="solar">太陽暦</option>
-        <option value="lunar">太陰暦</option>
+
+        <option value="solar">
+          太陽暦 (新暦)
+        </option>
+
+        <option value="lunar">
+          太陰暦 (旧暦)
+        </option>
+
       </select>
     </div>
 
     <div class="form-group">
+
       <label>誕生日</label>
 
       <input type="date"
@@ -403,6 +429,7 @@ button {
     </div>
 
     <div class="form-group">
+
       <label>出生時間</label>
 
       <select id="birth-hour">
@@ -424,15 +451,25 @@ button {
     </div>
 
     <div class="form-group">
+
       <label>性別</label>
 
       <select id="user-gender">
-        <option value="male">男</option>
-        <option value="female">女</option>
+
+        <option value="male">
+          男
+        </option>
+
+        <option value="female">
+          女
+        </option>
+
       </select>
     </div>
 
-    <button style="width:100%; margin-bottom:10px;"
+    <button style="
+            width:100%;
+            margin-bottom:10px;"
             onclick="closeSidebarAndScroll()">
 
       命盤を作成する
@@ -464,23 +501,28 @@ button {
 
 function toggleSidebar() {
 
-  document.getElementById('sidebar')
-    .classList.toggle('active');
+  document
+    .getElementById('sidebar')
+    .classList
+    .toggle('active');
 }
 
 /* =====================================================
-   作成後表示
+   命盤表示
 ===================================================== */
 
 function closeSidebarAndScroll() {
 
   if (window.innerWidth <= 768) {
 
-    document.getElementById('sidebar')
-      .classList.remove('active');
+    document
+      .getElementById('sidebar')
+      .classList
+      .remove('active');
   }
 
-  document.querySelectorAll('.init-hidden-mobile')
+  document
+    .querySelectorAll('.init-hidden-mobile')
     .forEach(el => {
 
       el.style.setProperty(
@@ -490,23 +532,24 @@ function closeSidebarAndScroll() {
       );
     });
 
-  if (window.triggerInitChartView) {
+  setTimeout(() => {
 
-    setTimeout(() => {
+    if (window.triggerInitChartView) {
 
       window.triggerInitChartView();
+    }
 
-    }, 300);
-  }
+  }, 400);
 
   setTimeout(() => {
 
-    document.getElementById('chart-container')
+    document
+      .getElementById('chart-container')
       .scrollIntoView({
         behavior: 'smooth'
       });
 
-  }, 350);
+  }, 450);
 }
 
 /* =====================================================
@@ -573,12 +616,10 @@ function printChart() {
       container.clientHeight;
 
     const chartWidth =
-      chart.scrollWidth;
+      chart.offsetWidth;
 
     const chartHeight =
-      chart.scrollHeight;
-
-    /* 命盤未生成 */
+      chart.offsetHeight;
 
     if (
       chartWidth === 0 ||
@@ -587,7 +628,7 @@ function printChart() {
       return;
     }
 
-    /* 全体フィット */
+    /* 全体表示 */
 
     baseScale = Math.min(
       containerWidth / chartWidth,
@@ -613,7 +654,7 @@ function printChart() {
     initChartView;
 
   /* =====================================================
-     transform適用
+     transform
   ===================================================== */
 
   function applyTransform() {
@@ -785,3 +826,4 @@ function printChart() {
 
 </body>
 </html>
+```
