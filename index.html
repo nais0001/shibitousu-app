@@ -71,6 +71,9 @@
 
     .print-only-text { display: none; }
 
+    /* 初期状態は表示、JS側でスマホ判定時に未作成なら隠す制御用 */
+    .init-hidden { display: block; }
+
     /* =====================================================
        スマホ（max-width: 768px）
     ===================================================== */
@@ -105,7 +108,7 @@
         cursor: pointer;
       }
 
-      /* 💡 入力パネル：「命盤データ入力」の見出しを非表示にし、お名前をボタン直下へ */
+      /* 入力パネル：「命盤データ入力」の見出しを非表示にし、お名前をボタン直下へ */
       #sidebar {
         position: fixed !important;
         left: 0 !important;
@@ -123,24 +126,24 @@
       }
 
       #sidebar h2 {
-        display: none !important; /* 💡 「命盤データ入力」を非表示 */
+        display: none !important;
       }
 
       #sidebar .form-group:first-of-type {
-        margin-top: 5px !important; /* お名前フォームの上の隙間を詰める */
+        margin-top: 5px !important;
       }
 
       #sidebar.active {
         top: 50px !important;
       }
 
-      /* 💡 命盤用コンテナ：ボタン直下から縦80%、横幅96%に使用変更 */
+      /* 💡 命盤用コンテナ：ボタン直下から「縦長さの60%くらい」まで。横幅は96% */
       #chart-container {
         width: 96% !important;
         max-width: 96% !important;
-        height: 80vh !important; /* 💡 画面縦長さの80%くらいに固定 */
-        margin: 60px auto 15px auto !important; /* 上をボタンの50px+余白分空ける */
-        position: relative;
+        height: 60vh !important; /* 💡 縦60%に修正 */
+        margin: 60px auto 15px auto !important;
+        position: relative !important;
         overflow: hidden !important;
         background-color: #fcfcfc;
         border: 1px solid #eee;
@@ -149,9 +152,10 @@
         box-sizing: border-box;
       }
 
+      /* 💡 タイトル文字のサイズ縮小：大きすぎるのを修正 */
       #chart-container h1 {
-        font-size: 18px;
-        margin: 10px auto 5px auto;
+        font-size: 15px !important; /* 💡 文字を小さく変更 */
+        margin: 8px auto 4px auto;
         text-align: center;
         width: 100%;
         display: block;
@@ -162,14 +166,16 @@
         background: rgba(255, 255, 255, 0.85);
       }
 
-      /* 💡 命盤本体 */
+      /* 💡 命盤本体：配置の暴れを防ぎ、完全に拡大縮小・移動の制御下に置く */
       #chart {
         width: 600px !important;
         min-width: 600px !important;
         margin: 0 !important;
         position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
         display: grid !important;
-        transform-origin: 0 0 !important; /* 拡大縮小・移動の起点を左上(0 0)に完全固定 */
+        transform-origin: 0 0 !important; /* 起点を左上に完全ロック */
         will-change: transform;
       }
 
@@ -208,10 +214,15 @@
         width: 100% !important;
         box-sizing: border-box;
       }
+
+      /* 💡 初期画面（未作成時）は非表示にするクラス */
+      .init-hidden-mobile {
+        display: none !important;
+      }
     }
 
     /* =====================================================
-       印刷レイアウト（修正版）
+       印刷レイアウト（修正版：2ページ目重なりを完全解消）
     ===================================================== */
     @media print {
       html, body, .app-layout, .main-content {
@@ -228,17 +239,24 @@
         display: none !important;
       }
 
-      /* 💡 印刷コンテナ：左端の欠けを防ぐため余白と位置を調整 */
+      /* 💡 印刷初期状態隠しを解除 */
+      .init-hidden-mobile {
+        display: block !important;
+      }
+
+      /* 💡 印刷コンテナ：重なりを消すため、高さを解除し position を通常配置(static)へ */
       #chart-container {
         display: block !important;
         width: 100% !important;
-        height: auto !important;
+        height: auto !important; /* 💡 高さを自動にして被りを防止 */
+        max-height: none !important;
+        position: static !important; /* 💡 absoluteや隠し要素の浮き上がりをリセット */
         overflow: visible !important;
         page-break-inside: avoid !important;
-        page-break-after: always !important;
+        page-break-after: always !important; /* 💡 命盤を1ページ目に収め、次を強制改ページ */
         text-align: center !important;
         margin: 0 auto !important;
-        padding: 0 0 0 20px !important; /* 💡 左端が欠けないよう右に少しシフト */
+        padding: 0 0 0 25px !important; /* 左端の欠け防止に少し右シフト */
         background: none !important;
         border: none !important;
         box-sizing: border-box;
@@ -250,14 +268,15 @@
         margin-top: 10mm !important;
         margin-bottom: 20px !important;
         background: none !important;
+        position: static !important; /* 固定配置解除 */
       }
 
       #chart {
         display: grid !important;
         width: 100% !important;
-        transform: none !important;
+        transform: none !important; /* 印刷時は縮小を完全解除 */
         margin: 0 auto !important;
-        position: static !important;
+        position: static !important; /* 重なり解消 */
       }
 
       #chart .star,
@@ -269,23 +288,24 @@
         padding-left: 8px !important;
       }
 
-      /* 💡 印刷時の大限表示：大限を左端から綺麗に表示 */
+      /* 印刷時の大限表示：大限を左端から綺麗に表示 */
       #chart .daigen,
       #chart .shogen,
       #chart .period-text,
       #chart div[class*="daigen"],
       #chart div[class*="shogen"] {
         display: block !important;
-        text-align: left !important; /* 💡 左端揃えに強制固定 */
+        text-align: left !important;
         justify-content: flex-start !important;
         padding-left: 4px !important;
         white-space: pre-line !important;
       }
 
+      /* 💡 鑑定書印刷コンテナ：2ページ目以降に綺麗に分離 */
       #reading-container {
         display: block !important;
         width: 100% !important;
-        page-break-before: always !important;
+        page-break-before: always !important; /* 💡 必ず次の新しいページから開始 */
         margin: 0 !important;
         padding: 30px 20px 0 20px !important;
         position: static !important;
@@ -321,12 +341,12 @@
 <div class="app-layout">
 
   <div class="main-content">
-    <div id="chart-container">
+    <div id="chart-container" class="init-hidden-mobile">
       <h1>紫微斗数 命盤</h1>
       <div id="chart" class="grid"></div>
     </div>
 
-    <div id="reading-container">
+    <div id="reading-container" class="init-hidden-mobile">
       <h3>鑑定書・特記事項</h3>
       <textarea id="reading-text" rows="15"></textarea>
       <div id="print-reading-text" class="print-only-text"></div>
@@ -396,10 +416,22 @@
     document.getElementById('sidebar').classList.toggle('active');
   }
 
+  /* 💡 命盤作成時に初期非表示クラスを解除する一文を追加 */
   function closeSidebarAndScroll() {
     if (window.innerWidth <= 768) {
       document.getElementById('sidebar').classList.remove('active');
     }
+    
+    // 💡 隠されていた命盤と鑑定書エリアを可視化する
+    document.querySelectorAll('.init-hidden-mobile').forEach(el => {
+      el.style.setProperty('display', 'block', 'important');
+    });
+
+    // 縮小フィットの座標計算を強制トリガー
+    if (window.triggerInitChartView) {
+      window.triggerInitChartView();
+    }
+
     setTimeout(() => {
       document.getElementById('chart-container')
         .scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -424,7 +456,7 @@
   }
 
   /* =====================================================
-     💡 スマホ専用 命盤マルチタッチビューア制御（ジャストフィット全体表示版）
+     💡 スマホ専用 命盤マルチタッチビューア制御（完全全体フィット版）
   ===================================================== */
   (function() {
     const container = document.getElementById('chart-container');
@@ -438,43 +470,45 @@
     let startX = 0, startY = 0;
     let startTouchDistance = 0;
 
-    // 1. 96%幅のコンテナに合わせて命盤（600px）全体を中央ジャストフィットさせる関数
+    // 1. 96%幅のコンテナに合わせて命盤（600px）全体を「完全中央フィット」させる関数
     function initChartView() {
       if (window.innerWidth > 768) {
         chart.style.transform = 'none';
-        chart.style.left = 'auto';
-        chart.style.top = 'auto';
         return;
       }
       
+      // 初期非表示状態の時はコンテナ幅が取れないためスキップ
+      if (container.clientWidth === 0) return;
+
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
       
-      // コンテナ幅に綺麗に収まるベース倍率を計算
+      // 💡 横幅ベースで縮小率を完全均等に割り出す
       baseScale = containerWidth / 600; 
       scale = baseScale;
 
-      // 💡 命盤の左上起点をコンテナ内の真ん中にジャスト配置する座標補正
+      // 💡 命盤全体をど真ん中に表示させるための座標を正確に初期化
       panX = 0; 
-      // 縦80vhのコンテナ内で、上下方向の真ん中に収まるように配置
       panY = (containerHeight - (600 * scale)) / 2;
-      if (panY < 40) panY = 40; // タイトルh1との被り防止
-
-      chart.style.left = '0px';
-      chart.style.top = '0px';
+      
+      // タイトルとの干渉バッファ調整
+      if (panY < 35) panY = 35; 
 
       applyTransform();
     }
 
+    // 外部からトリガーできるようにグローバル展開
+    window.triggerInitChartView = initChartView;
+
     // 2. CSS への反映
     function applyTransform() {
       if (window.innerWidth <= 768) {
-        // scaleをかけてからtranslateを行うことで、全体表示起点のスクロールが完全に安定します
+        // 先に全体の scale をかけ、その中で中心位置を均等にアジャスト
         chart.style.transform = `scale(${scale}) translate(${panX}px, ${panY / scale}px)`;
       }
     }
 
-    // 3. タッチイベント（ピンチイン・アウト、ドラッグ移動）
+    // 3. タッチイベント
     container.addEventListener('touchstart', function(e) {
       if (window.innerWidth > 768) return;
       
@@ -495,13 +529,11 @@
       if (window.innerWidth > 768) return;
 
       if (e.touches.length === 1 && isDragging) {
-        // 1本指での縦横無尽な移動
         panX = e.touches[0].clientX / scale - startX;
         const targetY = e.touches[0].clientY / scale - startY;
         panY = targetY * scale;
         applyTransform();
       } else if (e.touches.length === 2) {
-        // 2本指での拡大・縮小
         const currentDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -519,7 +551,7 @@
       isDragging = false;
       startTouchDistance = 0;
 
-      // 💡 縮小、あるいは初期状態に近くなったら全体表示（中央）へシュッと吸い付く
+      // 縮小するか指を離したら綺麗な中央全体表示に吸い付く
       if (scale <= baseScale * 1.02) {
         initChartView();
         chart.style.transition = 'transform 0.25s ease-out';
@@ -529,7 +561,6 @@
 
     window.addEventListener('resize', initChartView);
     
-    // 命盤生成の完了検知、および初期ロード時の実行
     const observer = new MutationObserver(function(mutations, obs) {
       if (document.getElementById('chart').children.length > 0) {
         initChartView();
@@ -538,8 +569,16 @@
     });
     observer.observe(chart, { childList: true });
     
+    // スマホ判定時の初期ハイド処理（PCレイアウト時は隠さない）
+    if (window.innerWidth <= 768) {
+      // 最初は表示しない
+    } else {
+      document.querySelectorAll('.init-hidden-mobile').forEach(el => {
+        el.style.display = 'block';
+      });
+    }
+
     setTimeout(initChartView, 400);
-    setTimeout(initChartView, 900);
   })();
 </script>
 
