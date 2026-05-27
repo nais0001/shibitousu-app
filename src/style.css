@@ -466,57 +466,43 @@ body {
    ========================================================================== */
 @media screen and (max-width: 768px) {
 
-  /* 💡 1. 命盤の大限／小限の文字を画面上で【絶対に非表示】にする */
+  /* 💡 1. 命盤の大限／小限の文字を画面上で非表示にする */
   .fortune-container {
     display: none !important;
   }
-
-  /* 💡 2. 各宮の干支（stem-branch）をタイトルの右上の隙間に配置 */
-  .title-container {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    border-bottom: 1px solid #eee !important;
-    padding-bottom: 3px !important;
-    margin-bottom: 5px !important;
+  
+  /* 星の文字が多い宮でも下部に余白を確保できるように調整 */
+  .palace {
+    padding-bottom: 5px !important;
   }
 
-  /* 干支を右上に寄せる */
-  .palace .stem-branch {
-    text-align: right !important;
-    margin-left: auto !important;
-    font-size: 11px !important;
-    color: #777 !important;
-  }
-
-  /* 💡 3. 中央部（中宮）の文字の行間・余白を詰める（間延び解消） */
+  /* 💡 2. 中央部（中宮）の文字の行間・余白を詰める */
   .center-palace {
-    padding: 10px 12px !important;    /* 内側の上下余白を縮小 */
+    padding: 10px 12px !important; /* 内側の上下余白を20pxから10pxに縮小 */
     justify-content: flex-start !important; /* 上詰めに固定 */
   }
 
   .center-name {
-    font-size: 16px !important;
+    font-size: 16px !important; /* 名前を少しスマートに */
     margin-bottom: 4px !important;
   }
 
   .center-divider {
-    margin-bottom: 8px !important;    /* 区切り線の下の隙間を半分に */
+    margin-bottom: 8px !important; /* 区切り線の下の隙間を半分に */
   }
 
   .center-info-item {
-    margin-bottom: 4px !important;     /* 各行の間隔をグッと詰める */
+    margin-bottom: 4px !important;  /* 各行の間隔を10pxから4pxに縮小（間延び解消） */
     padding-bottom: 2px !important;
-    font-size: 12px !important;
+    font-size: 12px !important;      /* 文字サイズをわずかに調整 */
   }
   
-  /* 命盤番号（No.）の左下固定位置 */
+  /* 命盤番号（No.）の配置調整 */
   .center-palace div[style*="position: absolute"] {
-    bottom: 8px !important;
-    left: 10px !important;
+    bottom: 4px !important; /* 下にべったり張り付きすぎないよう微調整 */
+    left: 12px !important;
   }
 }
-
 
 /* ==========================================================================
    🖨 印刷用スタイルの保護（既存の @media print の挙動を上書きしないための防護柵）
