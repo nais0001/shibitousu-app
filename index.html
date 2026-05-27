@@ -168,8 +168,10 @@
 
       /* 💡 命盤本体：配置の暴れを完全に防ぎ、JS側で右上・全体表示に制御 */
       #chart {
-        width: 600px !important;
-        min-width: 600px !important;
+        width: max-content !important;
+        min-width: unset !important;
+        //width: 600px !important;
+        //min-width: 600px !important;
         margin: 0 !important;
         position: absolute !important;
         left: 0 !important;
@@ -480,28 +482,33 @@
     let startX = 0, startY = 0;
     let startTouchDistance = 0;
 
-    // 1. 98%幅コンテナ内に命盤全体を「右上寄り」かつ「左右完全表示」させるフィット関数
     function initChartView() {
       if (window.innerWidth > 768) {
         chart.style.transform = 'none';
         return;
       }
-      
+    
       if (container.clientWidth === 0) return;
-
+    
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
-      
-      // 💡 拡張された98%コンテナ幅（実測値）から、正確な縮小スケールを逆算
-      baseScale = containerWidth / 600;
+    
+      // 実際の命盤サイズを取得
+      const chartWidth = chart.scrollWidth;
+      const chartHeight = chart.scrollHeight;
+    
+      // 命盤全体が必ず収まる倍率を自動計算
+      baseScale = Math.min(
+        containerWidth / chartWidth,
+        (containerHeight - 40) / chartHeight
+      );
+    
       scale = baseScale;
-
-      // 💡 【修正の核心】左寄せバグを排除し、下部のはみ出しを防ぐため「右上寄り」に座標配置
-      panX = 0; // 横幅はコンテナ幅(98%)にぴったり合わせるため 0 
-      
-      // 縦方向の下部はみ出しを防ぐため、コンテナ上部（h1の下付近）にキュッと寄せる計算に変更
-      panY = 32; 
-
+    
+      // 中央寄せ
+      panX = (containerWidth - chartWidth * scale) / 2 / scale;
+      panY = 20 / scale;
+    
       applyTransform();
     }
 
@@ -511,7 +518,8 @@
     function applyTransform() {
       if (window.innerWidth <= 768) {
         // scaleをかけてから、右上寄りの初期位置(panX, panY)へ正確にマッピング
-        chart.style.transform = `scale(${scale}) translate(${panX}px, ${panY / scale}px)`;
+        chart.style.transform =`translate(${panX * scale}px, ${panY * scale}px) scale(${scale})`;
+        //chart.style.transform = `scale(${scale}) translate(${panX}px, ${panY / scale}px)`;
       }
     }
 
