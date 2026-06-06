@@ -582,9 +582,67 @@ async function renderChart(event) {
   }
 }
 
-
 // 鑑定内容のテキスト枠生成と初期化（関数名、引数は完全維持）
 async function updateReadingContent(userName, patterns, element, patternNumber = 1) {
+  const readingArea = document.getElementById("reading-text");
+  
+  // 🌟追加：印刷専用のテキスト枠も取得
+  const printReadingArea = document.getElementById("print-reading-text");
+  
+  if (!readingArea) return;
+
+  /* ==========================================================================
+     [変更内容の解説]
+     1. 画面の性別セレクトボックス（id="gender" または id="sex" など）から値を取得します。
+     2. 性別が「女」の場合は接頭辞を "f_" に、それ以外（男など）は "m_" に決定します。
+     3. 決定した接頭辞を3桁の番号の前に付与して、男女別のファイルURLを生成します。
+     ========================================================================== */
+  // 💡 お使いの性別セレクトボックスの id 属性（例: "gender"）に合わせて適宜変更してください
+  const genderElement = document.getElementById("user-gender") || document.getElementById("sex");
+  const genderValue = genderElement ? genderElement.value : "男";
+
+  // 女・female・f のいずれかであれば f_ 、それ以外は m_
+  const prefix = (genderValue === "女" || genderValue === "female" || genderValue === "f") ? "f_" : "m_";
+
+  let headerText = `【紫微斗数 鑑定書】\n鑑定名：${userName} 様\n五行局：${element}\n主格局：${patterns.join('、')}\n\n`;
+  let fileContent = "";
+
+  const fileId = String(patternNumber).padStart(3, '0');
+  // 🌟 ファイル名を prefix（m_ または f_）付きに変更
+  const fileUrl = `/kantei_data/${prefix}${fileId}.txt`;
+
+  try {
+    const response = await fetch(fileUrl);
+    if (!response.ok) {
+      throw new Error(`ファイルが見つかりません (Status: ${response.status}): ${fileUrl}`);
+    }
+    fileContent = await response.text();
+  } catch (error) {
+    console.warn(`鑑定ファイル(${prefix}${fileId}.txt)の読み込みに失敗したため、初期文章を適用します:`, error);
+    fileContent = `--------------------------------------------------\n■ 全体運・気質の特徴\n本盤は特別な星の配置（${patterns.join(', ')}）が綺麗に形成されています。非常に高いポテンシャルを秘めており、今後の運勢において強力な武器となるでしょう。`;
+  }
+
+  const footerText = `\n\n--------------------------------------------------\n※本状は印刷機能に対応しています。`;
+  
+  // 3つの文章を統合
+  const fullText = headerText + fileContent + footerText;
+
+  // 1. 画面用のテキストエリアに値をセット
+  readingArea.value = fullText;
+
+  // 🌟 2.【追加】印刷専用の div 枠にも全く同じ文章を同期させる
+  if (printReadingArea) {
+    printReadingArea.innerText = fullText;
+  }
+
+  // 画面上での表示のガタつきを防ぐための高さ自動伸縮
+  readingArea.style.height = "auto"; 
+  readingArea.style.height = `${readingArea.scrollHeight}px`;
+}
+
+
+// 鑑定内容のテキスト枠生成と初期化（関数名、引数は完全維持）
+async function updateReadingContent_old(userName, patterns, element, patternNumber = 1) {
   const readingArea = document.getElementById("reading-text");
   
   // 🌟追加：印刷専用のテキスト枠も取得
