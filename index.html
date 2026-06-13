@@ -44,6 +44,12 @@
     .print-only-text { display: none; }
     .init-hidden-mobile { display: block; }
 
+	#btn-submit {
+	  background-color: #2196F3;
+	  color: white;
+	}
+
+
     /* =====================================================
        スマホ（max-width: 768px）
     ===================================================== */
@@ -243,7 +249,32 @@
       }
       textarea { display: none !important; }
     }
-    
+
+.label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 左右に分ける */
+    margin-bottom: 5px;
+}
+
+.label-row label {
+    font-weight: bold;
+}
+
+.right-link {
+    text-decoration: none;
+    font-size: 20px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #e0e0e0;
+    color: #333;
+}
+
+.right-link:hover {
+    background: #00ff7f;
+}
+
+
     footer {
       display: flex;
       justify-content: center;
@@ -254,7 +285,7 @@
 <body>
 
 <div class="mobile-menu-toggle no-print" id="menu-toggle" onclick="toggleSidebar()">
-  👤 条件入力を開く / 閉じる
+  👤 入力画面を開く / 閉じる
 </div>
 
 <div class="app-layout">
@@ -272,15 +303,21 @@
 
   <div id="sidebar" class="no-print">
     <h2>命盤データ入力</h2>
-    <div class="form-group">
-      <label>お名前</label>
-      <input type="text" id="user-name" value="鑑定ユーザー">
-    </div>
+
+<div class="form-group">
+  <div class="label-row">
+    <label>お名前</label>
+    <a href="https://elena.main.jp" class="right-link">&#x1F519;</a>
+  </div>
+  <input type="text" id="user-name" value="鑑定ユーザー">
+</div>
+
+
     <div class="form-group">
       <label>暦の種類</label>
       <select id="date-type">
-        <option value="solar">太陽暦 (新暦)</option>
-        <option value="lunar">太陰暦 (旧暦)</option>
+        <option value="solar">西暦</option>
+        <option value="lunar">旧暦 (太陰暦・農暦)</option>
       </select>
     </div>
     <div class="form-group">
